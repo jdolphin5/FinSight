@@ -1,2 +1,29 @@
 /docs
+
+### Backend/Server
+HELP.md
 /server/finsight/target
+/server/finsight/.mvn
+
+### STS ###
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+
+### IntelliJ IDEA ###
+.idea
+*.iws
+*.iml
+*.ipr
+
+### NetBeans ###
+server/finsight/nbproject/private/
+server/finsight/nbbuild/
+server/finsight/dist/
+server/finsight/nbdist/
+server/finsight/.nb-gradle/
+server/finsight/build/
