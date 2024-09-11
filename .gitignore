@@ -4,6 +4,7 @@
 HELP.md
 /server/finsight/target
 /server/finsight/.mvn
+/server/finsight/raw-data
 
 ### STS ###
 .apt_generated
