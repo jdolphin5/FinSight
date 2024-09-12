@@ -6,5 +6,6 @@ services:
     restart: always
     environment:
       POSTGRES_PASSWORD: password
-    volumes:
-      - ./raw-data:/raw-data
+    # not required to mount data to container to load it
+    #volumes:
+    #  - ./raw-data:/raw-data
