@@ -33,7 +33,9 @@ public class FinsightApplication implements CommandLineRunner {
 
 		log.info("Datasource: " + dataSource.toString());
 		final JdbcTemplate restTemplate = new JdbcTemplate(dataSource);
-		restTemplate.execute("select 1");
+		DataInserter dataInserter = new DataInserter(restTemplate);
+		dataInserter.loadCsvData(restTemplate);
+		restTemplate.execute("SELECT 1");
 	}
 
 	public void appMethod() throws Exception {
