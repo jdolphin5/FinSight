@@ -1,18 +1,15 @@
 package com.jd.finsight;
 
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.stereotype.Component;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.File;
 
 import java.time.format.DateTimeParseException;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-
 
 public class DataInserter {
 
@@ -44,7 +41,6 @@ public class DataInserter {
     private void insertData(String[] values) {
         String localTimeStr = values[1]; // e.g., "02.09.2024 00:33:00.000"
         LocalDateTime localDateTime = null;
-        
 
         try {
             localDateTime = LocalDateTime.parse(localTimeStr, DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss.SSS"));
@@ -52,7 +48,7 @@ public class DataInserter {
             System.out.println("local time str: " + localTimeStr);
             e.printStackTrace();
         }
-        
+
         Timestamp localTime = Timestamp.valueOf(localDateTime);
 
         String code = values[0];
@@ -64,9 +60,8 @@ public class DataInserter {
 
         // Order: code, local_time, open, high, low, close, volume
         jdbcTemplate.update(
-            "INSERT INTO candlestick_data (code, local_time, open, high, low, close, volume) VALUES (?, ?, ?, ?, ?, ?, ?)",
-            code, localTime, open, high, low, close, volume
-        );
+                "INSERT INTO candlestick_data (code, local_time, open, high, low, close, volume) VALUES (?, ?, ?, ?, ?, ?, ?)",
+                code, localTime, open, high, low, close, volume);
     }
 
 }
