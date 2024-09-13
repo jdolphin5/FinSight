@@ -1,7 +1,0 @@
-{
-  "java.configuration.updateBuildConfiguration": "interactive",
-  "java.project.sourcePaths": [
-    "src",
-    "server/finsight/src/main/java/com/finsight"
-  ]
-}

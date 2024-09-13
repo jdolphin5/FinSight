@@ -1,1 +1,0 @@
-SELECT * FROM "candlestick_data" LIMIT 10;
