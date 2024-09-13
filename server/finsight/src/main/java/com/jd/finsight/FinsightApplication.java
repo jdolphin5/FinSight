@@ -1,23 +1,24 @@
 package com.jd.finsight;
 
-import lombok.extern.java.Log;
+//import lombok.extern.java.Log;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.jdbc.core.JdbcTemplate;
-
-import javax.sql.DataSource;
 
 @SpringBootApplication
-@Log
+// @Log
 public class FinsightApplication implements CommandLineRunner {
 
-	private final DataSource dataSource;
-
-	//constructor
-	public FinsightApplication(final DataSource dataSource) {
-		this.dataSource = dataSource;
-	}
+	/*
+	 * 
+	 * private final JdbcTemplate jdbcTemplate;
+	 * 
+	 * //constructor
+	 * public FinsightApplication(final JdbcTemplate jdbcTemplate) {
+	 * this.jdbcTemplate = jdbcTemplate;
+	 * }
+	 * 
+	 */
 
 	public static void main(String[] args) {
 		SpringApplication.run(FinsightApplication.class, args);
@@ -31,18 +32,16 @@ public class FinsightApplication implements CommandLineRunner {
 			System.out.println(e.toString());
 		}
 
-		log.info("Datasource: " + dataSource.toString());
-		final JdbcTemplate restTemplate = new JdbcTemplate(dataSource);
-		DataInserter dataInserter = new DataInserter(restTemplate);
-		dataInserter.loadCsvData(restTemplate);
-		restTemplate.execute("SELECT 1");
+		// DataInserter dataInserter = new DataInserter(jdbcTemplate);
+		// dataInserter.loadCsvData(jdbcTemplate);
+		// jdbcTemplate.execute("SELECT 1");
 	}
 
 	public void appMethod() throws Exception {
 		int i = 0;
 
 		System.out.println(i++);
-		Thread.sleep(1000);
-		System.out.println(i++);
+		// Thread.sleep(1000);
+		// System.out.println(i++);
 	}
 }
