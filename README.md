@@ -6,5 +6,5 @@ In development - Full-stack Web App to analyse and visualise trends in historica
 - PostgreSQL Database in composed in Docker container
 - React front-end client
 - Python server to optimise computations and provide visualisation for calculations and graphs
-- Common design patterns including Factory, Observer, Command 
+- Common design patterns including Model-View-Controller (MVC), Factory, Observer, Command 
 - Restful API for communication between multiple services
