@@ -11,7 +11,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.jd.finsight.domain.HistoricalStockData;
+import com.jd.finsight.domain.HistoricalStockDataEntity;
 
 @SpringBootTest
 @ExtendWith(SpringExtension.class)
@@ -27,7 +27,7 @@ public class JacksonTests {
 
     @Test
     public void testThatObjectMapperCanCreateJsonFromJavaObject() throws JsonProcessingException {
-        HistoricalStockData stock = TestDataUtil.createTestStockA();
+        HistoricalStockDataEntity stock = TestDataUtil.createTestStockA();
 
         String res = objMapper.writeValueAsString(stock);
         assertThat(res).isEqualTo(
@@ -38,7 +38,7 @@ public class JacksonTests {
     public void testThatObjectMapperCanCreateJavaObjectFromJsonObject() throws JsonProcessingException {
         String json = "{\"id\":1,\"code\":\"AMZN\",\"local_time\":\"2024-09-01T14:00:00.000+00:00\",\"open\":228.957,\"low\":228.957,\"high\":228.957,\"close\":228.957,\"volume\":1.0}";
 
-        HistoricalStockData stock = objMapper.readValue(json, HistoricalStockData.class);
+        HistoricalStockDataEntity stock = objMapper.readValue(json, HistoricalStockDataEntity.class);
         assertThat(stock).isEqualTo(TestDataUtil.createTestStockA());
     }
 }

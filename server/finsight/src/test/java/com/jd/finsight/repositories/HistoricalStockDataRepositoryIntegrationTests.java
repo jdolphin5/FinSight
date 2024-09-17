@@ -1,7 +1,7 @@
 package com.jd.finsight.repositories;
 
 import com.jd.finsight.TestDataUtil;
-import com.jd.finsight.domain.HistoricalStockData;
+import com.jd.finsight.domain.HistoricalStockDataEntity;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -29,25 +29,25 @@ public class HistoricalStockDataRepositoryIntegrationTests {
 
     @Test
     public void testThatStockCanBeCreatedAndRecalled() {
-        HistoricalStockData stock = TestDataUtil.createTestStockA();
+        HistoricalStockDataEntity stock = TestDataUtil.createTestStockA();
         underTest.save(stock);
-        Optional<HistoricalStockData> result = underTest.findById(stock.getId());
+        Optional<HistoricalStockDataEntity> result = underTest.findById(stock.getId());
         assertThat(result).isPresent();
         assertThat(result.get()).isEqualTo(stock);
     }
 
     @Test
     public void testThatMultipleStocksCanBeCreatedAndRecalled() {
-        HistoricalStockData stockA = TestDataUtil.createTestStockA();
+        HistoricalStockDataEntity stockA = TestDataUtil.createTestStockA();
         underTest.save(stockA);
 
-        HistoricalStockData stockB = TestDataUtil.createTestStockB();
+        HistoricalStockDataEntity stockB = TestDataUtil.createTestStockB();
         underTest.save(stockB);
 
-        HistoricalStockData stockC = TestDataUtil.createTestStockC();
+        HistoricalStockDataEntity stockC = TestDataUtil.createTestStockC();
         underTest.save(stockC);
 
-        Iterable<HistoricalStockData> result = underTest.findAll();
+        Iterable<HistoricalStockDataEntity> result = underTest.findAll();
         assertThat(result)
                 .hasSize(3)
                 .containsExactly(stockA, stockB, stockC);
@@ -55,23 +55,23 @@ public class HistoricalStockDataRepositoryIntegrationTests {
 
     @Test
     public void testThatStockCanBeUpdated() {
-        HistoricalStockData stockA = TestDataUtil.createTestStockA();
+        HistoricalStockDataEntity stockA = TestDataUtil.createTestStockA();
         underTest.save(stockA);
 
         stockA.setCode("NVDA");
         underTest.save(stockA);
 
-        Optional<HistoricalStockData> result = underTest.findById(stockA.getId());
+        Optional<HistoricalStockDataEntity> result = underTest.findById(stockA.getId());
         assertThat(result).isPresent();
         assertThat(result.get()).isEqualTo(stockA);
     }
 
     @Test
     public void testThatStockCanBeDeleted() {
-        HistoricalStockData stockA = TestDataUtil.createTestStockA();
+        HistoricalStockDataEntity stockA = TestDataUtil.createTestStockA();
         underTest.save(stockA);
         underTest.deleteById(stockA.getId());
-        Optional<HistoricalStockData> result = underTest.findById(stockA.getId());
+        Optional<HistoricalStockDataEntity> result = underTest.findById(stockA.getId());
         assertThat(result).isEmpty();
     }
 }
