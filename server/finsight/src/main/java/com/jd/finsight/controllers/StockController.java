@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.jd.finsight.domain.Stock;
+import com.jd.finsight.domain.HistoricalStockData;
 
 import lombok.extern.java.Log;
 
@@ -18,8 +18,8 @@ import com.jd.finsight.util.StockUtil;
 public class StockController {
 
     @GetMapping(path = "/stocks")
-    public Stock retreieveStock() {
-        return Stock.builder()
+    public HistoricalStockData retreieveStock() {
+        return HistoricalStockData.builder()
                 .id(1L)
                 .code("AMZN")
                 .local_time(Timestamp.valueOf(StockUtil.convertRawTimestamp("02.09.2024 00:00:00.000")))
@@ -32,7 +32,7 @@ public class StockController {
     }
 
     @PostMapping(path = "/stocks")
-    public Stock createStock(@RequestBody final Stock stock) {
+    public HistoricalStockData createStock(@RequestBody final HistoricalStockData stock) {
         log.info("Retrieved stock: " + stock.toString());
         return stock;
     }

@@ -20,7 +20,7 @@ import jakarta.persistence.Table;
 @Builder
 @Entity
 @Table(name = "candlestick_data")
-public class Stock {
+public class HistoricalStockData {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "stock_id_seq")
@@ -32,9 +32,9 @@ public class Stock {
 
     private double open;
 
-    private double high;
-
     private double low;
+
+    private double high;
 
     private double close;
 

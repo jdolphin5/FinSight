@@ -1,17 +1,14 @@
 package com.jd.finsight;
 
-import com.jd.finsight.domain.Stock;
+import com.jd.finsight.domain.HistoricalStockData;
 
 import java.sql.Timestamp;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeParseException;
 
 import com.jd.finsight.util.StockUtil;
 
 public final class TestDataUtil {
-    public static Stock createTestStockA() {
-        return Stock.builder()
+    public static HistoricalStockData createTestStockA() {
+        return HistoricalStockData.builder()
                 .id(1L)
                 .code("AMZN")
                 .local_time(Timestamp.valueOf(StockUtil.convertRawTimestamp("02.09.2024 00:00:00.000")))
@@ -23,8 +20,8 @@ public final class TestDataUtil {
                 .build();
     }
 
-    public static Stock createTestStockB() {
-        return Stock.builder()
+    public static HistoricalStockData createTestStockB() {
+        return HistoricalStockData.builder()
                 .id(2L)
                 .code("AAPL")
                 .local_time(Timestamp.valueOf(StockUtil.convertRawTimestamp("03.09.2024 00:00:00.000")))
@@ -36,8 +33,8 @@ public final class TestDataUtil {
                 .build();
     }
 
-    public static Stock createTestStockC() {
-        return Stock.builder()
+    public static HistoricalStockData createTestStockC() {
+        return HistoricalStockData.builder()
                 .id(3L)
                 .code("DDOG")
                 .local_time(Timestamp.valueOf(StockUtil.convertRawTimestamp("04.09.2024 00:00:00.000")))
