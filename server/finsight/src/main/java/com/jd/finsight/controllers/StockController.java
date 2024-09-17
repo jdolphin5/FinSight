@@ -1,8 +1,14 @@
 package com.jd.finsight.controllers;
 
 import java.sql.Timestamp;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -31,28 +37,31 @@ public class StockController {
     }
 
     @GetMapping(path = "/stocks")
-    public HistoricalStockDataDto retreieveStock() {
-        return HistoricalStockDataDto.builder()
-                .id(1L)
-                .code("AMZN")
-                .local_time(Timestamp.valueOf(StockUtil.convertRawTimestamp("02.09.2024 00:00:00.000")))
-                .open(228.957)
-                .low(228.957)
-                .high(228.957)
-                .close(228.957)
-                .volume(1.0)
-                .build();
+    public List<HistoricalStockDataDto> listStocks() {
+        List<HistoricalStockDataEntity> stocks = historicalStockDataService.findAll();
+        return stocks.stream().map(historicalStockDataMapper::mapTo).collect(Collectors.toList());
+    }
+
+    @GetMapping(path = "/stocks/{id}")
+    public ResponseEntity<HistoricalStockDataDto> getStock(@PathVariable("id") Long id) {
+        Optional<HistoricalStockDataEntity> foundStock = historicalStockDataService.findOne(id);
+        return foundStock.map(historicalStockDataEntity -> {
+            HistoricalStockDataDto historicalStockDataDto = historicalStockDataMapper.mapTo(historicalStockDataEntity);
+            return new ResponseEntity<>(historicalStockDataDto, HttpStatus.OK);
+        }).orElse(new ResponseEntity<>(HttpStatus.NOT_FOUND));
     }
 
     @PostMapping(path = "/stocks")
-    public HistoricalStockDataDto createStock(@RequestBody final HistoricalStockDataDto stock) {
+    public ResponseEntity<HistoricalStockDataDto> createStock(@RequestBody final HistoricalStockDataDto stock) {
         HistoricalStockDataEntity historicalStockDataEntity = historicalStockDataMapper.mapFrom(stock);
         HistoricalStockDataEntity savedHistoricalStockDataEntity = historicalStockDataService
                 .createStock(historicalStockDataEntity);
 
         log.info("Retrieved stock: " + savedHistoricalStockDataEntity.toString());
 
-        return historicalStockDataMapper.mapTo(savedHistoricalStockDataEntity);
+        // ReponseEntity used to force 201 HttpStatus reponse
+        return new ResponseEntity<>(historicalStockDataMapper.mapTo(savedHistoricalStockDataEntity),
+                HttpStatus.CREATED);
     }
 
 }
