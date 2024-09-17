@@ -20,7 +20,7 @@ import jakarta.persistence.Table;
 @Builder
 @Entity
 @Table(name = "candlestick_data")
-public class HistoricalStockData {
+public class HistoricalStockDataEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "stock_id_seq")

@@ -7,7 +7,10 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.jd.finsight.domain.HistoricalStockData;
+import com.jd.finsight.domain.dto.HistoricalStockDataDto;
+import com.jd.finsight.mappers.Mapper;
+import com.jd.finsight.services.HistoricalStockDataService;
+import com.jd.finsight.domain.HistoricalStockDataEntity;
 
 import lombok.extern.java.Log;
 
@@ -17,9 +20,19 @@ import com.jd.finsight.util.StockUtil;
 @Log
 public class StockController {
 
+    private HistoricalStockDataService historicalStockDataService;
+
+    private Mapper<HistoricalStockDataEntity, HistoricalStockDataDto> historicalStockDataMapper;
+
+    public StockController(HistoricalStockDataService historicalStockDataService,
+            Mapper<HistoricalStockDataEntity, HistoricalStockDataDto> historicalStockDataMapper) {
+        this.historicalStockDataService = historicalStockDataService;
+        this.historicalStockDataMapper = historicalStockDataMapper;
+    }
+
     @GetMapping(path = "/stocks")
-    public HistoricalStockData retreieveStock() {
-        return HistoricalStockData.builder()
+    public HistoricalStockDataDto retreieveStock() {
+        return HistoricalStockDataDto.builder()
                 .id(1L)
                 .code("AMZN")
                 .local_time(Timestamp.valueOf(StockUtil.convertRawTimestamp("02.09.2024 00:00:00.000")))
@@ -32,9 +45,14 @@ public class StockController {
     }
 
     @PostMapping(path = "/stocks")
-    public HistoricalStockData createStock(@RequestBody final HistoricalStockData stock) {
-        log.info("Retrieved stock: " + stock.toString());
-        return stock;
+    public HistoricalStockDataDto createStock(@RequestBody final HistoricalStockDataDto stock) {
+        HistoricalStockDataEntity historicalStockDataEntity = historicalStockDataMapper.mapFrom(stock);
+        HistoricalStockDataEntity savedHistoricalStockDataEntity = historicalStockDataService
+                .createStock(historicalStockDataEntity);
+
+        log.info("Retrieved stock: " + savedHistoricalStockDataEntity.toString());
+
+        return historicalStockDataMapper.mapTo(savedHistoricalStockDataEntity);
     }
 
 }
