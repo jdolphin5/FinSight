@@ -24,19 +24,19 @@ public class HistoricalStockDataEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "stock_id_seq")
-    private long id;
+    private Long id;
 
     private String code;
 
     private Timestamp local_time;
 
-    private double open;
+    private Double open;
 
-    private double low;
+    private Double low;
 
-    private double high;
+    private Double high;
 
-    private double close;
+    private Double close;
 
-    private double volume;
+    private Double volume;
 }
