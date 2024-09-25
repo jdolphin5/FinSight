@@ -1,5 +1,10 @@
 /docs
 
+### Frontend
+/client/node_modules
+/client/package-lock.json
+/client/dist
+
 ### Backend/Server
 HELP.md
 /server/finsight/target
