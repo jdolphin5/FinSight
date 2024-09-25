@@ -5,6 +5,10 @@
 /client/package-lock.json
 /client/dist
 
+### Python Dash App/Server
+/python/venv/
+/python/__pycache__/
+
 ### Backend/Server
 HELP.md
 /server/finsight/target
