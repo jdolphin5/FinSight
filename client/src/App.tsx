@@ -10,14 +10,19 @@ const App: React.FC = () => {
 
   return (
     <div style={{ textAlign: "center", marginTop: "50px" }}>
-      <h1>React TypeScript Counter</h1>
-      <Counter count={count} />
-      <button
-        onClick={handleIncrement}
-        style={{ marginTop: "20px", padding: "10px 20px" }}
-      >
-        Increment
-      </button>
+      <div>
+        <h1>React TypeScript Counter</h1>
+        <Counter count={count} />
+        <button
+          onClick={handleIncrement}
+          style={{ marginTop: "20px", padding: "10px 20px" }}
+        >
+          Increment
+        </button>
+      </div>
+      <div>
+        <iframe src="http://localhost:8050" width="700" height="600" />
+      </div>
     </div>
   );
 };
