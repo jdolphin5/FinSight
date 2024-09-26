@@ -20,7 +20,7 @@ import com.jd.finsight.domain.HistoricalStockDataEntity;
 
 import lombok.extern.java.Log;
 
-import com.jd.finsight.util.StockUtil;
+//import com.jd.finsight.util.StockUtil;
 
 @RestController
 @Log
@@ -38,17 +38,23 @@ public class StockController {
 
     @GetMapping(path = "/stocks")
     public List<HistoricalStockDataDto> listStocks() {
-        List<HistoricalStockDataEntity> stocks = historicalStockDataService.findAll();
-        return stocks.stream().map(historicalStockDataMapper::mapTo).collect(Collectors.toList());
+        List<HistoricalStockDataEntity> stockEntries = historicalStockDataService.findAll();
+        return stockEntries.stream().map(historicalStockDataMapper::mapTo).collect(Collectors.toList());
     }
 
     @GetMapping(path = "/stocks/{id}")
     public ResponseEntity<HistoricalStockDataDto> getStock(@PathVariable("id") Long id) {
-        Optional<HistoricalStockDataEntity> foundStock = historicalStockDataService.findOne(id);
-        return foundStock.map(historicalStockDataEntity -> {
+        Optional<HistoricalStockDataEntity> foundStockEntry = historicalStockDataService.findOne(id);
+        return foundStockEntry.map(historicalStockDataEntity -> {
             HistoricalStockDataDto historicalStockDataDto = historicalStockDataMapper.mapTo(historicalStockDataEntity);
             return new ResponseEntity<>(historicalStockDataDto, HttpStatus.OK);
         }).orElse(new ResponseEntity<>(HttpStatus.NOT_FOUND));
+    }
+
+    @GetMapping(path = "/stocks/code/{code}")
+    public List<HistoricalStockDataDto> getStock(@PathVariable("code") String code) {
+        List<HistoricalStockDataEntity> foundStockEntries = historicalStockDataService.findAllWithCode(code);
+        return foundStockEntries.stream().map(historicalStockDataMapper::mapTo).collect(Collectors.toList());
     }
 
     @PostMapping(path = "/stocks")

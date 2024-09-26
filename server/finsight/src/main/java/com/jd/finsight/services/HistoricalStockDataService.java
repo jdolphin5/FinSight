@@ -11,4 +11,6 @@ public interface HistoricalStockDataService {
     List<HistoricalStockDataEntity> findAll();
 
     Optional<HistoricalStockDataEntity> findOne(Long id);
+
+    List<HistoricalStockDataEntity> findAllWithCode(String code);
 }

@@ -1,6 +1,7 @@
 package com.jd.finsight.services.impl;
 
 import java.util.List;
+import java.util.ArrayList;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
@@ -10,6 +11,7 @@ import org.springframework.stereotype.Service;
 import com.jd.finsight.domain.HistoricalStockDataEntity;
 import com.jd.finsight.repositories.HistoricalStockDataRepository;
 import com.jd.finsight.services.HistoricalStockDataService;
+import com.jd.finsight.util.StockUtil;
 
 @Service
 public class HistoricalStockDataServiceImpl implements HistoricalStockDataService {
@@ -33,6 +35,15 @@ public class HistoricalStockDataServiceImpl implements HistoricalStockDataServic
     @Override
     public Optional<HistoricalStockDataEntity> findOne(Long id) {
         return historicalStockDataRepository.findById(id);
+    }
+
+    @Override
+    public List<HistoricalStockDataEntity> findAllWithCode(String code) {
+        List<HistoricalStockDataEntity> historicalStockDataEntityList = StreamSupport
+                .stream(historicalStockDataRepository.findAll().spliterator(), false)
+                .collect(Collectors.toList());
+
+        return StockUtil.filterByCode(historicalStockDataEntityList, code);
     }
 
 }
