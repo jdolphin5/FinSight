@@ -1,5 +1,6 @@
 package com.jd.finsight.util;
 
+import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
@@ -34,5 +35,22 @@ public class StockUtil {
         }
 
         return historicalStockDataEntityWithCodeList;
+    }
+
+    public static List<HistoricalStockDataEntity> filterByDate(
+            List<HistoricalStockDataEntity> historicalStockDataEntityList, LocalDateTime dateFrom,
+            LocalDateTime dateTo) {
+        List<HistoricalStockDataEntity> historicalStockDataEntityWithDateBetweenList = new ArrayList<>();
+
+        for (HistoricalStockDataEntity e : historicalStockDataEntityList) {
+            Timestamp local_time = e.getLocal_time();
+            LocalDateTime local_timeDateTime = local_time.toLocalDateTime();
+
+            if (local_timeDateTime.isAfter(dateFrom) && local_timeDateTime.isBefore(dateTo)) {
+                historicalStockDataEntityWithDateBetweenList.add(e);
+            }
+        }
+
+        return historicalStockDataEntityWithDateBetweenList;
     }
 }

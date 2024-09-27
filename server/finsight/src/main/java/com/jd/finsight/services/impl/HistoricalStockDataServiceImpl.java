@@ -1,6 +1,8 @@
 package com.jd.finsight.services.impl;
 
 import java.util.List;
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -44,6 +46,19 @@ public class HistoricalStockDataServiceImpl implements HistoricalStockDataServic
                 .collect(Collectors.toList());
 
         return StockUtil.filterByCode(historicalStockDataEntityList, code);
+    }
+
+    @Override
+    public List<HistoricalStockDataEntity> findAllWithCodeAndDateBetween(String code, LocalDateTime dateFromDateTime,
+            LocalDateTime dateToDateTime) {
+        List<HistoricalStockDataEntity> historicalStockDataEntityList = StreamSupport
+                .stream(historicalStockDataRepository.findAll().spliterator(), false)
+                .collect(Collectors.toList());
+
+        List<HistoricalStockDataEntity> historicalStockDataEntityWithCodeAndDateBetweenList = StockUtil
+                .filterByDate(StockUtil.filterByCode(historicalStockDataEntityList, code), dateFromDateTime,
+                        dateToDateTime);
+        return historicalStockDataEntityWithCodeAndDateBetweenList;
     }
 
 }

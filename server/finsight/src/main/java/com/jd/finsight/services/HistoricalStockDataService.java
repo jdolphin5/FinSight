@@ -1,5 +1,6 @@
 package com.jd.finsight.services;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -13,4 +14,7 @@ public interface HistoricalStockDataService {
     Optional<HistoricalStockDataEntity> findOne(Long id);
 
     List<HistoricalStockDataEntity> findAllWithCode(String code);
+
+    List<HistoricalStockDataEntity> findAllWithCodeAndDateBetween(String code, LocalDateTime dateFromDateTime,
+            LocalDateTime dateToDateTime);
 }

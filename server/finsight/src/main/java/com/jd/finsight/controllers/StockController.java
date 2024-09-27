@@ -1,6 +1,7 @@
 package com.jd.finsight.controllers;
 
 import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.jd.finsight.domain.dto.HistoricalStockDataDto;
 import com.jd.finsight.mappers.Mapper;
 import com.jd.finsight.services.HistoricalStockDataService;
+import com.jd.finsight.util.StockUtil;
 import com.jd.finsight.domain.HistoricalStockDataEntity;
 
 import lombok.extern.java.Log;
@@ -54,6 +56,17 @@ public class StockController {
     @GetMapping(path = "/stocks/code/{code}")
     public List<HistoricalStockDataDto> getStock(@PathVariable("code") String code) {
         List<HistoricalStockDataEntity> foundStockEntries = historicalStockDataService.findAllWithCode(code);
+        return foundStockEntries.stream().map(historicalStockDataMapper::mapTo).collect(Collectors.toList());
+    }
+
+    @GetMapping(path = "/stocks/datefrom/{datefrom}/dateto/{dateto}/code/{code}")
+    public List<HistoricalStockDataDto> getStock(@PathVariable("datefrom") String dateFrom,
+            @PathVariable("dateto") String dateTo, @PathVariable("code") String code) {
+        LocalDateTime dateFromDateTime = StockUtil.convertRawTimestamp(dateFrom);
+        LocalDateTime dateToDateTime = StockUtil.convertRawTimestamp(dateTo);
+
+        List<HistoricalStockDataEntity> foundStockEntries = historicalStockDataService
+                .findAllWithCodeAndDateBetween(code, dateFromDateTime, dateToDateTime);
         return foundStockEntries.stream().map(historicalStockDataMapper::mapTo).collect(Collectors.toList());
     }
 
