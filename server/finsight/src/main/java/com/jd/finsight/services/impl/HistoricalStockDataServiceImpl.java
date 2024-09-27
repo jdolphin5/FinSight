@@ -59,4 +59,13 @@ public class HistoricalStockDataServiceImpl implements HistoricalStockDataServic
         return historicalStockDataEntityWithCodeAndDateBetweenList;
     }
 
+    @Override
+    public Optional<HistoricalStockDataEntity> deleteStock(Long id) {
+        Optional<HistoricalStockDataEntity> stockEntity = historicalStockDataRepository.findById(id);
+
+        stockEntity.ifPresent(historicalStockDataRepository::delete);
+
+        return stockEntity;
+    }
+
 }

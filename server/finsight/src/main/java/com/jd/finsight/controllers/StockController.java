@@ -1,7 +1,9 @@
 package com.jd.finsight.controllers;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -10,6 +12,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -130,4 +133,28 @@ public class StockController {
         return new ResponseEntity<>(historicalStockDataMapper.mapTo(savedHistoricalStockDataEntity),
                 HttpStatus.CREATED);
     }
+
+    @DeleteMapping(path = "/stocks/{id}")
+    public ResponseEntity<Map<String, String>> deleteStock(@PathVariable("id") Long id) {
+        Optional<HistoricalStockDataEntity> foundStockEntry = historicalStockDataService.findOne(id);
+
+        // If stock entry is found, delete it and return a JSON response with a success
+        // message
+        if (foundStockEntry.isPresent()) {
+            historicalStockDataService.deleteStock(id); // Ensure this method deletes the entity
+
+            // Create a success response in JSON format
+            Map<String, String> response = new HashMap<>();
+            response.put("message", "Stock deleted successfully");
+
+            return new ResponseEntity<>(response, HttpStatus.OK); // Return 200 OK with JSON response
+        }
+
+        // If stock entry is not found, return a JSON response with a not found message
+        Map<String, String> response = new HashMap<>();
+        response.put("message", "Stock not found");
+
+        return new ResponseEntity<>(response, HttpStatus.NOT_FOUND); // Return 404 NOT FOUND with JSON response
+    }
+
 }

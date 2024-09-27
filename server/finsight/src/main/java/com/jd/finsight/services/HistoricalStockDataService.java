@@ -17,4 +17,6 @@ public interface HistoricalStockDataService {
 
     List<HistoricalStockDataEntity> findAllWithCodeAndDateBetween(String code, LocalDateTime dateFromDateTime,
             LocalDateTime dateToDateTime);
+
+    Optional<HistoricalStockDataEntity> deleteStock(Long id);
 }
