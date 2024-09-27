@@ -1,23 +1,28 @@
 package com.jd.finsight.controllers;
 
-import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.client.RestTemplate;
 
 import com.jd.finsight.domain.dto.HistoricalStockDataDto;
 import com.jd.finsight.mappers.Mapper;
 import com.jd.finsight.services.HistoricalStockDataService;
 import com.jd.finsight.util.StockUtil;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jd.finsight.domain.HistoricalStockDataEntity;
 
 import lombok.extern.java.Log;
@@ -36,6 +41,34 @@ public class StockController {
             Mapper<HistoricalStockDataEntity, HistoricalStockDataDto> historicalStockDataMapper) {
         this.historicalStockDataService = historicalStockDataService;
         this.historicalStockDataMapper = historicalStockDataMapper;
+    }
+
+    private boolean sendStockDataToDash(List<HistoricalStockDataDto> historicalStockDataList)
+            throws JsonProcessingException {
+        try {
+            RestTemplate restTemplate = new RestTemplate();
+
+            // Define headers
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+
+            ObjectMapper objectMapper = new ObjectMapper();
+            String jsonArray = objectMapper.writeValueAsString(historicalStockDataList);
+
+            // System.out.println(jsonArray);
+
+            // Create the HTTP request with headers and body (stock data)
+            HttpEntity<String> request = new HttpEntity<>(jsonArray, headers);
+
+            // Send POST request to Dash server (assuming it runs on localhost:8050)
+            String dashUrl = "http://localhost:8050/update-stock";
+            restTemplate.postForEntity(dashUrl, request, String.class);
+
+            return true; // If the request was successful
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false; // If there was an error
+        }
     }
 
     @GetMapping(path = "/stocks")
@@ -67,7 +100,22 @@ public class StockController {
 
         List<HistoricalStockDataEntity> foundStockEntries = historicalStockDataService
                 .findAllWithCodeAndDateBetween(code, dateFromDateTime, dateToDateTime);
-        return foundStockEntries.stream().map(historicalStockDataMapper::mapTo).collect(Collectors.toList());
+        List<HistoricalStockDataDto> returnList = foundStockEntries.stream().map(historicalStockDataMapper::mapTo)
+                .collect(Collectors.toList());
+
+        try {
+            boolean success = sendStockDataToDash(returnList);
+
+            if (success) {
+                System.out.println("Successfully sent stock data to Dash app");
+            } else {
+                System.out.println("Failed to send stock data to Dash app");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return returnList;
     }
 
     @PostMapping(path = "/stocks")
@@ -82,5 +130,4 @@ public class StockController {
         return new ResponseEntity<>(historicalStockDataMapper.mapTo(savedHistoricalStockDataEntity),
                 HttpStatus.CREATED);
     }
-
 }
