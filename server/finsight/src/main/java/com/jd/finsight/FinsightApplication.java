@@ -43,5 +43,8 @@ public class FinsightApplication implements CommandLineRunner {
 		System.out.println(i++);
 		// Thread.sleep(1000);
 		// System.out.println(i++);
+
+		// DataInserter dI = new DataInserter();
+		// dI.loadCsvData();
 	}
 }
