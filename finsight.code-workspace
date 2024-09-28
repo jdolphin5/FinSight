@@ -1,0 +1,16 @@
+{
+  "folders": [
+    {
+      "path": "client"
+    },
+    {
+      "path": "python"
+    },
+    {
+      "path": "server"
+    }
+  ],
+  "settings": {
+    // You can add specific settings for each workspace here
+  }
+}
