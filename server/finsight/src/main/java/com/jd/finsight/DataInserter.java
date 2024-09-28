@@ -21,7 +21,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class DataInserter {
     public void loadCsvData() {
+        // Data loaded from:
+        // https://www.dukascopy.com/trading-tools/widgets/quotes/historical_data_feed
+        // Sample:
         String csvFile = "C:\\Users\\james\\Documents\\github repo\\FinSight\\server\\finsight\\raw-data\\AAPLUS-USD_Candlestick_1_M_BID_02.09.2024-11.09.2024.csv";
+
+        // String csvFile = "C:\\Users\\james\\Documents\\github
+        // repo\\FinSight\\server\\finsight\\raw-data\\AMZNUS-USD_Candlestick_1_M_BID_02.09.2024-21.09.2024.csv";
         int i = 0;
 
         try (BufferedReader br = new BufferedReader(new FileReader(csvFile))) {
