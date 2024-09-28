@@ -46,34 +46,6 @@ public class StockController {
         this.historicalStockDataMapper = historicalStockDataMapper;
     }
 
-    private boolean sendStockDataToDash(List<HistoricalStockDataDto> historicalStockDataList)
-            throws JsonProcessingException {
-        try {
-            RestTemplate restTemplate = new RestTemplate();
-
-            // Define headers
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.APPLICATION_JSON);
-
-            ObjectMapper objectMapper = new ObjectMapper();
-            String jsonArray = objectMapper.writeValueAsString(historicalStockDataList);
-
-            // System.out.println(jsonArray);
-
-            // Create the HTTP request with headers and body (stock data)
-            HttpEntity<String> request = new HttpEntity<>(jsonArray, headers);
-
-            // Send POST request to Dash server (assuming it runs on localhost:8050)
-            String dashUrl = "http://localhost:8050/update-stock";
-            restTemplate.postForEntity(dashUrl, request, String.class);
-
-            return true; // If the request was successful
-        } catch (Exception e) {
-            e.printStackTrace();
-            return false; // If there was an error
-        }
-    }
-
     @GetMapping(path = "/stocks")
     public List<HistoricalStockDataDto> listStocks() {
         List<HistoricalStockDataEntity> stockEntries = historicalStockDataService.findAll();
@@ -98,6 +70,10 @@ public class StockController {
     @GetMapping(path = "/stocks/datefrom/{datefrom}/dateto/{dateto}/code/{code}")
     public List<HistoricalStockDataDto> getStock(@PathVariable("datefrom") String dateFrom,
             @PathVariable("dateto") String dateTo, @PathVariable("code") String code) {
+
+        System.out
+                .println("Received GET request: stock code: " + code + " dateFrom: " + dateFrom + " dateTo: " + dateTo);
+
         LocalDateTime dateFromDateTime = StockUtil.convertRawTimestamp(dateFrom);
         LocalDateTime dateToDateTime = StockUtil.convertRawTimestamp(dateTo);
 
@@ -105,18 +81,6 @@ public class StockController {
                 .findAllWithCodeAndDateBetween(code, dateFromDateTime, dateToDateTime);
         List<HistoricalStockDataDto> returnList = foundStockEntries.stream().map(historicalStockDataMapper::mapTo)
                 .collect(Collectors.toList());
-
-        try {
-            boolean success = sendStockDataToDash(returnList);
-
-            if (success) {
-                System.out.println("Successfully sent stock data to Dash app");
-            } else {
-                System.out.println("Failed to send stock data to Dash app");
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
 
         return returnList;
     }
