@@ -1,7 +1,8 @@
-# app.py
-from flask import Flask, request, jsonify
-from dash import Dash, html, dcc, Input, Output, callback
-import plotly.graph_objs as go
+from flask import Flask, jsonify
+from dash import Dash, html, dcc, Input, Output
+import plotly.graph_objects as go
+import requests
+import pandas as pd  # Import pandas for data manipulation
 
 # Initialize Flask server
 server = Flask(__name__)
@@ -9,69 +10,110 @@ server = Flask(__name__)
 # Initialize Dash app with Flask server
 app = Dash(__name__, server=server)
 
-# Global variable to store stock data
-stock_data = {}
+# Example stock codes for dropdown
+available_stocks = ['AAPL', 'AMZN', 'GOOGL', 'TSLA', 'MSFT']
 
-# Define Dash layout
+# Define the Dash layout
 app.layout = html.Div([
     html.H1("Stock Data Visualization"),
-    dcc.Input(id='stock-code-input', type='text', value='AAPL', placeholder='Enter Stock Code'),
-    html.Button('Update Graph', id='update-button', n_clicks=0),
+
+    # Dropdown to select stock code
+    dcc.Dropdown(
+        id='stock-dropdown',
+        options=[{'label': stock, 'value': stock} for stock in available_stocks],
+        value='AAPL',  # Default value
+        placeholder='Select Stock'
+    ),
+
+    # Buttons for time range selection
+    html.Div([
+        html.Button('5 Years', id='5-years-button', n_clicks=0),
+        html.Button('1 Year', id='1-year-button', n_clicks=0),
+        html.Button('6 Months', id='6-months-button', n_clicks=0),
+        html.Button('1 Month', id='1-month-button', n_clicks=0),
+        html.Button('5 Days', id='5-days-button', n_clicks=0),
+        html.Button('1 Day', id='1-day-button', n_clicks=0),
+    ], style={'display': 'flex', 'gap': '10px', 'margin': '10px 0'}),
+
     dcc.Graph(id='stock-graph'),
     html.Div(id='stock-info')
 ])
 
 @app.callback(
     [Output('stock-graph', 'figure'), Output('stock-info', 'children')],
-    [Input('stock-info', 'children')]
+    [Input('stock-dropdown', 'value'),
+     Input('5-years-button', 'n_clicks'),
+     Input('1-year-button', 'n_clicks'),
+     Input('6-months-button', 'n_clicks'),
+     Input('1-month-button', 'n_clicks'),
+     Input('5-days-button', 'n_clicks'),
+     Input('1-day-button', 'n_clicks')]
 )
-def update_graph(_):
-    global stock_data
+def update_graph(selected_stock, n_clicks_5y, n_clicks_1y, n_clicks_6m, n_clicks_1m, n_clicks_5d, n_clicks_1d):
+    # Determine the selected time range based on the button clicks
+    time_range = None
+    if n_clicks_5y:
+        time_range = '5y'
+    elif n_clicks_1y:
+        time_range = '1y'
+    elif n_clicks_6m:
+        time_range = '6m'
+    elif n_clicks_1m:
+        time_range = '1m'
+    elif n_clicks_5d:
+        time_range = '5d'
+    elif n_clicks_1d:
+        time_range = '1d'
 
-    # Check if stock_data is not empty and is a list
+    # Build the URL for the GET request to the backend
+    backend_url = f"http://127.0.0.1:8080/stocks/datefrom/01.01.2020 01:01:01.000/dateto/28.09.2024 01:01:01.000/code/{selected_stock}"
+
+    # Make a GET request to fetch stock data from the backend
+    try:
+        response = requests.get(backend_url)
+        response.raise_for_status()  # Check if request was successful
+        stock_data = response.json()
+    except requests.exceptions.RequestException as e:
+        return {}, f"Error fetching data: {str(e)}"
+
+    # Check if stock_data is valid and has the necessary structure
     if not stock_data or not isinstance(stock_data, list):
         return {}, "No data available or invalid format"
 
-    # Extract data from the entire stock_data list
-    times = [entry.get('local_time', 'N/A') for entry in stock_data]
-    close_prices = [entry.get('close', 0) for entry in stock_data]
-    stock_code = stock_data[0].get('code', 'N/A')  # Assuming all entries have the same stock code
+    # Convert the stock data to a Pandas DataFrame
+    df = pd.DataFrame(stock_data)
 
-    # Create the graph with all data points
+    # Ensure the 'local_time' column is in datetime format
+    df['local_time'] = pd.to_datetime(df['local_time'])
+
+    # Prepare the data for the graph
+    stock_times = df['local_time']  # Using the DataFrame column
+    stock_close_prices = df['close']  # Using the DataFrame column
+
+
+    # Create the figure for the graph
     figure = {
-        'data': [{
-            'x': times,  # List of time points
-            'y': close_prices,  # List of stock close prices
-            'type': 'line',
-            'name': stock_code
-        }],
-        'layout': {
-            'title': f"Stock: {stock_code} Price Over Time",
-            'xaxis': {'title': 'Time'},
-            'yaxis': {'title': 'Close Price'}
-        }
+        'data': [go.Scatter(
+            x=stock_times,
+            y=stock_close_prices,
+            mode='markers',
+            name=f'{selected_stock}'
+        )],
+        'layout': go.Layout(
+            title=f"Stock: {selected_stock} ({time_range})",
+            xaxis={'title': 'Time', 'showgrid': False},
+            yaxis={'title': 'Close Price', 'showgrid': False},
+        )
     }
 
-    # Display stock information (you can customize this to display more details)
-    info = f"Stock: {stock_code}, Number of data points: {len(stock_data)}"
+    # Stock information (showing the last close price and time)
+    last_entry = df.iloc[-1] if not df.empty else {}
+    stock_code = last_entry.get('code', 'N/A')
+    last_close_price = last_entry.get('close', 0)
+    last_time = last_entry.get('local_time', 'N/A')
+    info = f"Stock: {stock_code}, Last close price: {last_close_price}, Time: {last_time}"
 
     return figure, info
-
-
-
-# Define endpoint to receive POST request from Spring Boot
-@server.route('/update-stock', methods=['POST'])
-def update_stock():
-    global stock_data
-    data = request.get_json()
-
-    if not isinstance(data, list) or not data:
-        return jsonify({"status": "failure", "reason": "Invalid data format"}), 400
-
-    # Process each stock entry in the list
-    stock_data = data  # Assuming you're overriding global stock_data with the new data
-
-    return jsonify({"status": "success"}), 200
 
 
 if __name__ == '__main__':
