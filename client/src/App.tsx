@@ -1,27 +1,13 @@
 import React, { useState } from "react";
-import Counter from "./Counter";
 
 const App: React.FC = () => {
-  const [count, setCount] = useState(0);
-
-  const handleIncrement = () => {
-    setCount(count + 1);
-  };
-
   return (
     <div style={{ textAlign: "center", marginTop: "50px" }}>
       <div>
-        <h1>React TypeScript Counter</h1>
-        <Counter count={count} />
-        <button
-          onClick={handleIncrement}
-          style={{ marginTop: "20px", padding: "10px 20px" }}
-        >
-          Increment
-        </button>
+        <h1>React App</h1>
       </div>
       <div>
-        <iframe src="http://localhost:8050" width="700" height="600" />
+        <iframe src="http://localhost:8050" width="800" height="800" />
       </div>
     </div>
   );
