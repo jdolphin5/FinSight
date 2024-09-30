@@ -37,7 +37,7 @@ app.layout = html.Div([
 
     dcc.Graph(id='stock-graph'),
     html.Div(id='stock-info'),
-    html.Div(id='simple-moving-average')
+    html.Div(id='simple-moving-average'),
 ])
 
 @app.callback(
@@ -91,15 +91,29 @@ def update_graph(selected_stock, n_clicks_5y, n_clicks_1y, n_clicks_6m, n_clicks
     stock_times = df['local_time']  # Using the DataFrame column
     stock_close_prices = df['close']  # Using the DataFrame column
 
+    df['EMA'] = df['close'].ewm(span=10, adjust=False).mean()
+    stock_ema = df['EMA']
+
 
     # Create the figure for the graph
     figure = {
-        'data': [go.Scatter(
-            x=stock_times,
-            y=stock_close_prices,
-            mode='markers',
-            name=f'{selected_stock}'
-        )],
+        'data': [
+            go.Scatter(
+                x=stock_times,
+                y=stock_close_prices,
+                mode='markers',
+                name=f'{selected_stock}',
+                marker=dict(size=3)
+            ),
+            go.Scatter(
+                x=stock_times,
+                y=stock_ema,
+                mode='markers',
+                name=f'{selected_stock} EMA (10-day)',
+                line=dict(color='orange'),
+                marker=dict(size=2)
+            )
+        ],
         'layout': go.Layout(
             title=f"Stock: {selected_stock} ({time_range})",
             xaxis={'title': 'Time', 'showgrid': False},
