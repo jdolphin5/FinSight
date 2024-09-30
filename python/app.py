@@ -36,11 +36,12 @@ app.layout = html.Div([
     ], style={'display': 'flex', 'gap': '10px', 'margin': '10px 0'}),
 
     dcc.Graph(id='stock-graph'),
-    html.Div(id='stock-info')
+    html.Div(id='stock-info'),
+    html.Div(id='simple-moving-average')
 ])
 
 @app.callback(
-    [Output('stock-graph', 'figure'), Output('stock-info', 'children')],
+    [Output('stock-graph', 'figure'), Output('stock-info', 'children'), Output('simple-moving-average', 'children')],
     [Input('stock-dropdown', 'value'),
      Input('5-years-button', 'n_clicks'),
      Input('1-year-button', 'n_clicks'),
@@ -106,6 +107,15 @@ def update_graph(selected_stock, n_clicks_5y, n_clicks_1y, n_clicks_6m, n_clicks
         )
     }
 
+    sma_total = 0
+
+    for close in stock_close_prices:
+        sma_total += close
+    
+    sma = sma_total / len(stock_close_prices);
+
+    sma_info = f"SMA (Simple Moving Average): {round(sma, 3)}, calculated over {len(stock_close_prices)} points"
+
     # Stock information (showing the last close price and time)
     last_entry = df.iloc[-1] if not df.empty else {}
     stock_code = last_entry.get('code', 'N/A')
@@ -113,7 +123,7 @@ def update_graph(selected_stock, n_clicks_5y, n_clicks_1y, n_clicks_6m, n_clicks
     last_time = last_entry.get('local_time', 'N/A')
     info = f"Stock: {stock_code}, Last close price: {last_close_price}, Time: {last_time}"
 
-    return figure, info
+    return figure, info, sma_info
 
 
 if __name__ == '__main__':
