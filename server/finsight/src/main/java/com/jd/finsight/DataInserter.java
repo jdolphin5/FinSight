@@ -71,8 +71,9 @@ public class DataInserter {
         double close = Double.parseDouble(values[5]);
         double volume = Double.parseDouble(values[6]);
 
-        HistoricalStockDataDto historicalStockDataDto = new HistoricalStockDataDto((long) i, code, localTime, open, low,
+        HistoricalStockDataDto historicalStockDataDto = new HistoricalStockDataDto((long) i, code, localTime, open,
                 high,
+                low,
                 close, volume);
 
         try {
