@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.jd.finsight.domain.HistoricalStockDataEntity;
 import com.jd.finsight.repositories.HistoricalStockDataRepository;
@@ -14,6 +15,7 @@ import com.jd.finsight.services.HistoricalStockDataService;
 import com.jd.finsight.util.StockUtil;
 
 @Service
+@Transactional
 public class HistoricalStockDataServiceImpl implements HistoricalStockDataService {
     private HistoricalStockDataRepository historicalStockDataRepository;
 
