@@ -76,6 +76,8 @@ def update_graph(selected_stock, n_clicks_5y, n_clicks_1y, n_clicks_6m, n_clicks
         response = requests.get(backend_url)
         response.raise_for_status()  # Check if request was successful
         stock_data = response.json()
+
+        print("API Response Data Length:", len(stock_data))
     except requests.exceptions.RequestException as e:
         return {}, f"Error fetching data: {str(e)}"
 
@@ -87,12 +89,12 @@ def update_graph(selected_stock, n_clicks_5y, n_clicks_1y, n_clicks_6m, n_clicks
     df = pd.DataFrame(stock_data)
 
     # Ensure the 'local_time' column is in datetime format
-    df['local_time'] = pd.to_datetime(df['local_time']).dt.tz_localize(None)
+    df['local_time'] = pd.to_datetime(df['local_time'])
     
     
     if relayoutData and 'xaxis.range[0]' in relayoutData and 'xaxis.range[1]' in relayoutData:
-        start_time = pd.to_datetime(relayoutData['xaxis.range[0]'])
-        end_time = pd.to_datetime(relayoutData['xaxis.range[1]'])
+        start_time = pd.to_datetime(relayoutData['xaxis.range[0]']).tz_localize('UTC').tz_convert("Australia/Sydney")
+        end_time = pd.to_datetime(relayoutData['xaxis.range[1]']).tz_localize('UTC').tz_convert("Australia/Sydney")
         df_filtered = df[(df['local_time'] >= start_time) & (df['local_time'] <= end_time)]
         
         # To avoid a SettingWithCopy warning when apply .iloc to the data frame
