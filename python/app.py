@@ -100,17 +100,27 @@ def update_graph(selected_stock, selected_graph_type, n_clicks_5y, n_clicks_1y, 
     # Ensure the 'local_time' column is in datetime format
     df['local_time'] = pd.to_datetime(df['local_time'])
     
+    df_filtered = df
+    df_filtered = df_filtered.copy()
     
     if relayoutData and 'xaxis.range[0]' in relayoutData and 'xaxis.range[1]' in relayoutData:
-        start_time = pd.to_datetime(relayoutData['xaxis.range[0]']).tz_localize('UTC').tz_convert("Australia/Sydney")
-        end_time = pd.to_datetime(relayoutData['xaxis.range[1]']).tz_localize('UTC').tz_convert("Australia/Sydney")
+        # Extract the uniform x-range (indices) from relayoutData
+        start_idx = int(float(relayoutData['xaxis.range[0]']))  # relayoutData returns strings, so cast to float first
+        end_idx = int(float(relayoutData['xaxis.range[1]']))
+
+        # Ensure indices are within bounds
+        start_idx = max(0, start_idx)
+        end_idx = min(len(df_filtered) - 1, end_idx)
+
+        # Map the indices back to the corresponding timestamps
+        start_time = df_filtered['local_time'].iloc[start_idx]
+        end_time = df_filtered['local_time'].iloc[end_idx]
+
+        # Filter the DataFrame based on these time values
         df_filtered = df[(df['local_time'] >= start_time) & (df['local_time'] <= end_time)]
-        
-        # To avoid a SettingWithCopy warning when apply .iloc to the data frame
+
+        # Safely copy the DataFrame
         df_filtered = df_filtered.copy()
-    else:
-    # If no zooming is done, use the full dataset
-        df_filtered = df
 
     stock_times = df_filtered['local_time']  # Using the DataFrame column
     stock_close_prices = df_filtered['close']  # Using the DataFrame column
@@ -207,6 +217,8 @@ def update_graph(selected_stock, selected_graph_type, n_clicks_5y, n_clicks_1y, 
     period = len(df_filtered['close']) # Weighted moving average period equal to number of data points
     df_filtered['WMA'] = calculate_wma(df_filtered, period)
 
+    print(df_filtered['WMA'])
+
     wma = df_filtered['WMA'].iloc[-1]
 
     wma_info = f'The Weighted Moving Average for {len(df_filtered['close'])} points is {wma}'
@@ -232,9 +244,13 @@ def calculate_wma(df, period):
     - pd.Series: Weighted Moving Average.
     """
     weights = pd.Series(range(1, period + 1))  # Create a range of weights (1 to period)
-    
-    # Use rolling to apply the WMA over the specified period
-    wma = df['close'].rolling(window=period).apply(lambda prices: (prices * weights).sum() / weights.sum(), raw=True)
+
+    if (len(df['close']) == 0):
+        weights.iloc[-1] = -1
+        wma = weights
+    else:
+        # Use rolling to apply the WMA over the specified period
+        wma = df['close'].rolling(window=period).apply(lambda prices: (prices * weights).sum() / weights.sum(), raw=True)
     
     return wma
 
