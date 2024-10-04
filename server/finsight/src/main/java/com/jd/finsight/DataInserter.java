@@ -24,10 +24,18 @@ public class DataInserter {
         // Data loaded from:
         // https://www.dukascopy.com/trading-tools/widgets/quotes/historical_data_feed
         // Sample:
-        String csvFile = "C:\\Users\\james\\Documents\\github repo\\FinSight\\server\\finsight\\raw-data\\AAPLUS-USD_Candlestick_1_M_BID_02.09.2024-11.09.2024.csv";
+        // String csvFile = "C:\\Users\\james\\Documents\\github
+        // repo\\FinSight\\server\\finsight\\raw-data\\AAPLUS-USD_Candlestick_1_M_BID_02.09.2024-11.09.2024.csv";
 
         // String csvFile = "C:\\Users\\james\\Documents\\github
         // repo\\FinSight\\server\\finsight\\raw-data\\AMZNUS-USD_Candlestick_1_M_BID_02.09.2024-21.09.2024.csv";
+
+        // String csvFile = "C:\\Users\\james\\Documents\\github
+        // repo\\FinSight\\server\\finsight\\raw-data\\AAPL.USUSD_Candlestick_1_M_BID_09.09.2024-28.09.2024.csv";
+
+        // String csvFile = "C:\\Users\\james\\Documents\\github
+        // repo\\FinSight\\server\\finsight\\raw-data\\AMZN.USUSD_Candlestick_1_M_BID_09.09.2024-28.09.2024.csv";
+
         int i = 0;
 
         try (BufferedReader br = new BufferedReader(new FileReader(csvFile))) {
@@ -52,11 +60,12 @@ public class DataInserter {
     }
 
     private boolean insertData(int i, String[] values) {
-        String localTimeStr = values[1]; // e.g., "02.09.2024 00:33:00.000"
+        String localTimeStr = values[1]; // e.g., "02.09.2024 00:33:00.000 GMT+1000"
         LocalDateTime localDateTime = null;
 
         try {
-            localDateTime = LocalDateTime.parse(localTimeStr, DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss.SSS"));
+            localDateTime = LocalDateTime.parse(localTimeStr,
+                    DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss.SSS 'GMT'XX"));
         } catch (DateTimeParseException e) {
             System.out.println("local time str: " + localTimeStr);
             e.printStackTrace();
