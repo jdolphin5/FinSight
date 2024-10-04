@@ -12,6 +12,7 @@ app = Dash(__name__, server=server)
 
 # Example stock codes for dropdown
 available_stocks = ['AAPL', 'AMZN', 'GOOGL', 'TSLA', 'MSFT']
+available_graph_types = ['Standard', 'MACD']
 
 # Define the Dash layout
 app.layout = html.Div([
@@ -23,6 +24,13 @@ app.layout = html.Div([
         options=[{'label': stock, 'value': stock} for stock in available_stocks],
         value='AAPL',  # Default value
         placeholder='Select Stock'
+    ),
+
+    dcc.Dropdown(
+        id='graph-type-dropdown',
+        options=[{'label': graph_type, 'value': graph_type} for graph_type in available_graph_types],
+        value='Standard',
+        placeholder='Select Graph Type'
     ),
 
     # Buttons for time range selection
@@ -44,6 +52,7 @@ app.layout = html.Div([
 @app.callback(
     [Output('stock-graph', 'figure'), Output('stock-info', 'children'), Output('simple-moving-average', 'children'), Output('weighted-moving-average', 'children')],
     [Input('stock-dropdown', 'value'),
+     Input('graph-type-dropdown', 'value'),
      Input('5-years-button', 'n_clicks'),
      Input('1-year-button', 'n_clicks'),
      Input('6-months-button', 'n_clicks'),
@@ -52,7 +61,7 @@ app.layout = html.Div([
      Input('1-day-button', 'n_clicks'),
      Input('stock-graph', 'relayoutData')]
 )
-def update_graph(selected_stock, n_clicks_5y, n_clicks_1y, n_clicks_6m, n_clicks_1m, n_clicks_5d, n_clicks_1d, relayoutData):
+def update_graph(selected_stock, selected_graph_type, n_clicks_5y, n_clicks_1y, n_clicks_6m, n_clicks_1m, n_clicks_5d, n_clicks_1d, relayoutData):
     # Determine the selected time range based on the button clicks
     time_range = None
     if n_clicks_5y:
@@ -103,50 +112,101 @@ def update_graph(selected_stock, n_clicks_5y, n_clicks_1y, n_clicks_6m, n_clicks
     # If no zooming is done, use the full dataset
         df_filtered = df
 
-    # Prepare the data for the graph
     stock_times = df_filtered['local_time']  # Using the DataFrame column
     stock_close_prices = df_filtered['close']  # Using the DataFrame column
+
+    uniform_x = list(range(len(df_filtered)))
+
+    num_ticks = 3 if len(df_filtered) < 4 else 4  # Show 3 or 4 ticks depending on data size
+    step = max(1, len(df_filtered) // num_ticks)  # Ensure dynamic spacing based on visible data
+    reduced_x = uniform_x[::step]  # Uniform x values reduced
+    reduced_dates = stock_times.dt.strftime('%Y-%m-%d')[::step]
 
     df_filtered['EMA'] = df_filtered['close'].ewm(span=10, adjust=False).mean()
     stock_ema = df_filtered['EMA']
 
     # Create the figure for the graph
-    figure = {
-        'data': [
-            go.Scatter(
-                x=stock_times,
-                y=stock_close_prices,
-                mode='markers',
-                name=f'{selected_stock}',
-                marker=dict(size=3)
-            ),
-            go.Scatter(
-                x=stock_times,
-                y=stock_ema,
-                mode='markers',
-                name=f'{selected_stock} EMA (10-day)',
-                line=dict(color='orange'),
-                marker=dict(size=2)
+    if (selected_graph_type == 'Standard'):
+        figure = {
+            'data': [
+                go.Scatter(
+                    x=uniform_x,
+                    y=stock_close_prices,
+                    mode='lines',
+                    name=f'{selected_stock}',
+                    marker=dict(size=3),
+                    text=stock_times.dt.strftime('%Y-%m-%d'),
+                    hoverinfo='text+y'
+                ),
+                go.Scatter(
+                    x=uniform_x,
+                    y=stock_ema,
+                    mode='lines',
+                    name=f'{selected_stock} EMA (10-day)',
+                    line=dict(color='orange'),
+                    marker=dict(size=2)
+                )
+            ],
+            'layout': go.Layout(
+                title=f"Stock: {selected_stock} ({time_range})",
+                xaxis_title="Date",
+                xaxis=dict(
+                    tickmode='array',
+                    tickvals=reduced_x,  # Positions of ticks are reduced uniform x-values
+                    ticktext=reduced_dates  # Show reduced set of actual dates at each tick
+                ),
+                yaxis={'title': 'Close Price', 'showgrid': False},
             )
-        ],
-        'layout': go.Layout(
-            title=f"Stock: {selected_stock} ({time_range})",
-            xaxis={'title': 'Time', 'showgrid': False},
-            yaxis={'title': 'Close Price', 'showgrid': False},
-        )
-    }
+        }
+    elif (selected_graph_type == 'MACD'):
+        df_macd = calculate_macd(df_filtered)
+
+        figure = {
+            'data': [
+                go.Scatter(
+                    x=uniform_x,
+                    y=df_macd['MACD'],
+                    mode='markers',
+                    name=f'{selected_stock} MACD',
+                    line=dict(color='orange'),
+                    marker=dict(size=2)
+                ),
+                go.Scatter(
+                    x=uniform_x,
+                    y=df_macd['Signal_Line'],
+                    mode='lines',
+                    name='Signal Line',
+                    line=dict(color='orange'),
+                    marker=dict(size=2)
+                )
+            ],
+            'layout': go.Layout(
+                title=f"Stock: {selected_stock} ({time_range})",
+                xaxis_title="Date",
+                xaxis=dict(
+                    tickmode='array',
+                    tickvals=reduced_x,  # Positions of ticks are reduced uniform x-values
+                    ticktext=reduced_dates  # Show reduced set of actual dates at each tick
+                ),
+                yaxis={'title': 'Close Price', 'showgrid': False},
+            )
+        }
 
     sma_total = 0
 
     for close in stock_close_prices:
         sma_total += close
     
-    sma = sma_total / len(stock_close_prices);
+    if (len(stock_close_prices > 0)):
+        sma = sma_total / len(stock_close_prices)
+    else:
+        sma = 0
 
     sma_info = f"SMA (Simple Moving Average): {round(sma, 3)}, calculated over {len(stock_close_prices)} points"
 
     period = len(df_filtered['close']) # Weighted moving average period equal to number of data points
     df_filtered['WMA'] = calculate_wma(df_filtered, period)
+
     wma = df_filtered['WMA'].iloc[-1]
 
     wma_info = f'The Weighted Moving Average for {len(df_filtered['close'])} points is {wma}'
@@ -177,6 +237,14 @@ def calculate_wma(df, period):
     wma = df['close'].rolling(window=period).apply(lambda prices: (prices * weights).sum() / weights.sum(), raw=True)
     
     return wma
+
+def calculate_macd(df, short_period=12, long_period=26, signal_period=9):
+    df['EMA_12'] = df['close'].ewm(span=short_period, adjust=False).mean()
+    df['EMA_26'] = df['close'].ewm(span=long_period, adjust=False).mean()
+    df['MACD'] = df['EMA_12'] - df['EMA_26']
+    df['Signal_Line'] = df['MACD'].ewm(span=signal_period, adjust=False).mean()
+    df['MACD_Histogram'] = df['MACD'] - df['Signal_Line']
+    return df
 
 if __name__ == '__main__':
     app.run_server(debug=True, port=8050)
