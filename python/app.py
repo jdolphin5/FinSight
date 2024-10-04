@@ -4,7 +4,7 @@ import plotly.graph_objects as go
 import requests
 import pandas as pd  # Import pandas for data manipulation
 from math_calcs import calculate_wma, calculate_macd, calculate_true_range, calculate_dm, calculate_di
-from math_calcs import calculate_adx, calculate_parabolic_sar
+from math_calcs import calculate_adx, calculate_parabolic_sar, calculate_rsi
 
 # Initialize Flask server
 server = Flask(__name__)
@@ -14,7 +14,8 @@ app = Dash(__name__, server=server)
 
 # Example stock codes for dropdown
 available_stocks = ['AAPL', 'AMZN', 'GOOGL', 'TSLA', 'MSFT']
-available_graph_types = ['Standard', 'MACD - Moving Averga Convergence/Divergence', 'ADX - Average Directional Index', 'Parabolic SAR - Stop and Reverse']
+available_graph_types = ['Standard', 'MACD - Moving Averga Convergence/Divergence', 'ADX - Average Directional Index', 'Parabolic SAR - Stop and Reverse',
+                         'RSI - Relative Strength Indicator']
 
 # Define the Dash layout
 app.layout = html.Div([
@@ -131,7 +132,7 @@ def update_graph(selected_stock, selected_graph_type, n_clicks_5y, n_clicks_1y, 
     num_ticks = 3 if len(df_filtered) < 4 else 4  # Show 3 or 4 ticks depending on data size
     step = max(1, len(df_filtered) // num_ticks)  # Ensure dynamic spacing based on visible data
     reduced_x = uniform_x[::step]  # Uniform x values reduced
-    reduced_dates = stock_times.dt.strftime('%Y-%m-%d')[::step]
+    reduced_dates = stock_times.dt.strftime('%d-%m-%Y')[::step]
 
     df_filtered['EMA'] = df_filtered['close'].ewm(span=10, adjust=False).mean()
     stock_ema = df_filtered['EMA']
@@ -146,7 +147,7 @@ def update_graph(selected_stock, selected_graph_type, n_clicks_5y, n_clicks_1y, 
                     mode='lines',
                     name=f'{selected_stock}',
                     marker=dict(size=3),
-                    text=stock_times.dt.strftime('%Y-%m-%d'),
+                    text=stock_times.dt.strftime('%d-%m-%Y, %r'),
                     hoverinfo='text+y'
                 ),
                 go.Scatter(
@@ -155,7 +156,9 @@ def update_graph(selected_stock, selected_graph_type, n_clicks_5y, n_clicks_1y, 
                     mode='lines',
                     name=f'{selected_stock} EMA (10-day)',
                     line=dict(color='orange'),
-                    marker=dict(size=2)
+                    marker=dict(size=2),
+                    text=stock_times.dt.strftime('%d-%m-%Y, %r'),
+                    hoverinfo='text+y'
                 )
             ],
             'layout': go.Layout(
@@ -180,7 +183,9 @@ def update_graph(selected_stock, selected_graph_type, n_clicks_5y, n_clicks_1y, 
                     mode='lines',
                     name=f'{selected_stock} MACD',
                     line=dict(color='orange'),
-                    marker=dict(size=2)
+                    marker=dict(size=2),
+                    text=stock_times.dt.strftime('%d-%m-%Y, %r'),
+                    hoverinfo='text+y'
                 ),
                 go.Scatter(
                     x=uniform_x,
@@ -188,7 +193,9 @@ def update_graph(selected_stock, selected_graph_type, n_clicks_5y, n_clicks_1y, 
                     mode='lines',
                     name='Signal Line',
                     line=dict(color='green'),
-                    marker=dict(size=2)
+                    marker=dict(size=2),
+                    text=stock_times.dt.strftime('%d-%m-%Y, %r'),
+                    hoverinfo='text+y'
                 )
             ],
             'layout': go.Layout(
@@ -216,7 +223,9 @@ def update_graph(selected_stock, selected_graph_type, n_clicks_5y, n_clicks_1y, 
                     mode='lines',
                     name=f'{selected_stock} ADX (period: 14)',
                     line=dict(color='orange'),
-                    marker=dict(size=2)
+                    marker=dict(size=2),
+                    text=stock_times.dt.strftime('%d-%m-%Y, %r'),
+                    hoverinfo='text+y'
                 )
             ],
             'layout': go.Layout(
@@ -241,7 +250,9 @@ def update_graph(selected_stock, selected_graph_type, n_clicks_5y, n_clicks_1y, 
                     mode='lines',
                     name=f'{selected_stock} SAR',
                     line=dict(color='orange'),
-                    marker=dict(size=4)
+                    marker=dict(size=4),
+                    text=stock_times.dt.strftime('%d-%m-%Y, %r'),
+                    hoverinfo='text+y'
                 ),
                                 go.Scatter(
                     x=uniform_x,
@@ -249,7 +260,9 @@ def update_graph(selected_stock, selected_graph_type, n_clicks_5y, n_clicks_1y, 
                     mode='lines',
                     name=f'{selected_stock} High',
                     line=dict(color='red'),
-                    marker=dict(size=2)
+                    marker=dict(size=2),
+                    text=stock_times.dt.strftime('%d-%m-%Y, %r'),
+                    hoverinfo='text+y'
                 ),
                 go.Scatter(
                     x=uniform_x,
@@ -257,7 +270,9 @@ def update_graph(selected_stock, selected_graph_type, n_clicks_5y, n_clicks_1y, 
                     mode='lines',
                     name=f'{selected_stock} Low',
                     line=dict(color='blue'),
-                    marker=dict(size=2)
+                    marker=dict(size=2),
+                    text=stock_times.dt.strftime('%d-%m-%Y, %r'),
+                    hoverinfo='text+y'
                 )
             ],
             'layout': go.Layout(
@@ -269,6 +284,32 @@ def update_graph(selected_stock, selected_graph_type, n_clicks_5y, n_clicks_1y, 
                     ticktext=reduced_dates  # Show reduced set of actual dates at each tick
                 ),
                 yaxis={'title': 'Price', 'showgrid': False},
+            )
+        }
+    elif (selected_graph_type == 'RSI - Relative Strength Indicator'):
+        df_filtered = calculate_rsi(df_filtered)
+        figure = {
+            'data': [
+                go.Scatter(
+                    x=uniform_x,
+                    y=df_filtered['RSI'],
+                    mode='lines',
+                    name=f'{selected_stock} RSI (period: 14)',
+                    line=dict(color='orange'),
+                    marker=dict(size=2),
+                    text=stock_times.dt.strftime('%d-%m-%Y, %r'),
+                    hoverinfo='text+y'
+                )
+            ],
+            'layout': go.Layout(
+                title=f"Stock: {selected_stock} ({time_range})",
+                xaxis_title="Date",
+                xaxis=dict(
+                    tickmode='array',
+                    tickvals=reduced_x,  # Positions of ticks are reduced uniform x-values
+                    ticktext=reduced_dates  # Show reduced set of actual dates at each tick
+                ),
+                yaxis={'title': 'RSI', 'showgrid': False},
             )
         }
 
