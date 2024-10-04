@@ -137,6 +137,8 @@ def update_graph(selected_stock, selected_graph_type, n_clicks_5y, n_clicks_1y, 
     df_filtered['EMA'] = df_filtered['close'].ewm(span=10, adjust=False).mean()
     stock_ema = df_filtered['EMA']
 
+    asterix_info = ''
+
     # Create the figure for the graph
     if (selected_graph_type == 'Standard'):
         figure = {
@@ -209,7 +211,7 @@ def update_graph(selected_stock, selected_graph_type, n_clicks_5y, n_clicks_1y, 
                 yaxis={'title': 'Price', 'showgrid': False},
             )
         }
-    elif (selected_graph_type == 'ADX - Average Directional Index'):
+    elif (selected_graph_type == 'ADX - Average Directional Index'):        
         df_filtered = calculate_true_range(df_filtered)
         df_filtered = calculate_dm(df_filtered)
         df_filtered = calculate_di(df_filtered, period=14)
@@ -240,52 +242,58 @@ def update_graph(selected_stock, selected_graph_type, n_clicks_5y, n_clicks_1y, 
             )
         }
     elif (selected_graph_type == 'Parabolic SAR - Stop and Reverse'):
-        df_filtered = calculate_parabolic_sar(df_filtered)
+        if (len(df_filtered) == 0):
+            asterix_info = 'There is no data in this range'
 
-        figure = {
-            'data': [
-                go.Scatter(
-                    x=uniform_x,
-                    y=df_filtered['SAR'],
-                    mode='lines',
-                    name=f'{selected_stock} SAR',
-                    line=dict(color='orange'),
-                    marker=dict(size=4),
-                    text=stock_times.dt.strftime('%d-%m-%Y, %r'),
-                    hoverinfo='text+y'
-                ),
-                                go.Scatter(
-                    x=uniform_x,
-                    y=df_filtered['high'],
-                    mode='lines',
-                    name=f'{selected_stock} High',
-                    line=dict(color='red'),
-                    marker=dict(size=2),
-                    text=stock_times.dt.strftime('%d-%m-%Y, %r'),
-                    hoverinfo='text+y'
-                ),
-                go.Scatter(
-                    x=uniform_x,
-                    y=df_filtered['low'],
-                    mode='lines',
-                    name=f'{selected_stock} Low',
-                    line=dict(color='blue'),
-                    marker=dict(size=2),
-                    text=stock_times.dt.strftime('%d-%m-%Y, %r'),
-                    hoverinfo='text+y'
+        else:
+            df_filtered = calculate_parabolic_sar(df_filtered)
+
+            asterix_info = '*AF = Acceleration Factor, initial_af=0.02, max_af=0.20, step_af=0.02'
+
+            figure = {
+                'data': [
+                    go.Scatter(
+                        x=uniform_x,
+                        y=df_filtered['SAR'],
+                        mode='lines',
+                        name=f'{selected_stock} SAR',
+                        line=dict(color='orange'),
+                        marker=dict(size=4),
+                        text=stock_times.dt.strftime('%d-%m-%Y, %r'),
+                        hoverinfo='text+y'
+                    ),
+                                    go.Scatter(
+                        x=uniform_x,
+                        y=df_filtered['high'],
+                        mode='lines',
+                        name=f'{selected_stock} High',
+                        line=dict(color='red'),
+                        marker=dict(size=2),
+                        text=stock_times.dt.strftime('%d-%m-%Y, %r'),
+                        hoverinfo='text+y'
+                    ),
+                    go.Scatter(
+                        x=uniform_x,
+                        y=df_filtered['low'],
+                        mode='lines',
+                        name=f'{selected_stock} Low',
+                        line=dict(color='blue'),
+                        marker=dict(size=2),
+                        text=stock_times.dt.strftime('%d-%m-%Y, %r'),
+                        hoverinfo='text+y'
+                    )
+                ],
+                'layout': go.Layout(
+                    title=f"Stock: {selected_stock} ({time_range})",
+                    xaxis_title="Date",
+                    xaxis=dict(
+                        tickmode='array',
+                        tickvals=reduced_x,  # Positions of ticks are reduced uniform x-values
+                        ticktext=reduced_dates  # Show reduced set of actual dates at each tick
+                    ),
+                    yaxis={'title': 'Price', 'showgrid': False},
                 )
-            ],
-            'layout': go.Layout(
-                title=f"Stock: {selected_stock} ({time_range})",
-                xaxis_title="Date",
-                xaxis=dict(
-                    tickmode='array',
-                    tickvals=reduced_x,  # Positions of ticks are reduced uniform x-values
-                    ticktext=reduced_dates  # Show reduced set of actual dates at each tick
-                ),
-                yaxis={'title': 'Price', 'showgrid': False},
-            )
-        }
+            }
     elif (selected_graph_type == 'RSI - Relative Strength Indicator'):
         df_filtered = calculate_rsi(df_filtered)
         figure = {
@@ -339,12 +347,6 @@ def update_graph(selected_stock, selected_graph_type, n_clicks_5y, n_clicks_1y, 
     wma = df_filtered['WMA'].iloc[-1]
 
     wma_info = f'The Weighted Moving Average for {len(df_filtered['close'])} points is {wma}'
-
-    asterix_info = ''
-
-    if (selected_graph_type == 'Parabolic SAR - Stop and Reverse'):
-        asterix_info = '*AF = Acceleration Factor, initial_af=0.02, max_af=0.20, step_af=0.02'
-
 
     return figure, asterix_info, info, sma_info, wma_info
 
