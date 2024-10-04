@@ -3,6 +3,7 @@ from dash import Dash, html, dcc, Input, Output
 import plotly.graph_objects as go
 import requests
 import pandas as pd  # Import pandas for data manipulation
+from math_calcs import calculate_wma, calculate_macd, calculate_true_range, calculate_dm, calculate_di, calculate_adx
 
 # Initialize Flask server
 server = Flask(__name__)
@@ -12,7 +13,7 @@ app = Dash(__name__, server=server)
 
 # Example stock codes for dropdown
 available_stocks = ['AAPL', 'AMZN', 'GOOGL', 'TSLA', 'MSFT']
-available_graph_types = ['Standard', 'MACD']
+available_graph_types = ['Standard', 'MACD - Moving Averga Convergence/Divergence', 'ADX - Average Directional Index']
 
 # Define the Dash layout
 app.layout = html.Div([
@@ -85,8 +86,6 @@ def update_graph(selected_stock, selected_graph_type, n_clicks_5y, n_clicks_1y, 
         response = requests.get(backend_url)
         response.raise_for_status()  # Check if request was successful
         stock_data = response.json()
-
-        print("API Response Data Length:", len(stock_data))
     except requests.exceptions.RequestException as e:
         return {}, f"Error fetching data: {str(e)}"
 
@@ -135,6 +134,11 @@ def update_graph(selected_stock, selected_graph_type, n_clicks_5y, n_clicks_1y, 
     df_filtered['EMA'] = df_filtered['close'].ewm(span=10, adjust=False).mean()
     stock_ema = df_filtered['EMA']
 
+    df_filtered = calculate_true_range(df_filtered)
+    df_filtered = calculate_dm(df_filtered)
+    df_filtered = calculate_di(df_filtered, period=14)
+    df_filtered = calculate_adx(df_filtered, period=14)
+
     # Create the figure for the graph
     if (selected_graph_type == 'Standard'):
         figure = {
@@ -168,7 +172,7 @@ def update_graph(selected_stock, selected_graph_type, n_clicks_5y, n_clicks_1y, 
                 yaxis={'title': 'Close Price', 'showgrid': False},
             )
         }
-    elif (selected_graph_type == 'MACD'):
+    elif (selected_graph_type == 'MACD - Moving Averga Convergence/Divergence'):
         df_macd = calculate_macd(df_filtered)
 
         figure = {
@@ -176,7 +180,7 @@ def update_graph(selected_stock, selected_graph_type, n_clicks_5y, n_clicks_1y, 
                 go.Scatter(
                     x=uniform_x,
                     y=df_macd['MACD'],
-                    mode='markers',
+                    mode='lines',
                     name=f'{selected_stock} MACD',
                     line=dict(color='orange'),
                     marker=dict(size=2)
@@ -186,6 +190,29 @@ def update_graph(selected_stock, selected_graph_type, n_clicks_5y, n_clicks_1y, 
                     y=df_macd['Signal_Line'],
                     mode='lines',
                     name='Signal Line',
+                    line=dict(color='green'),
+                    marker=dict(size=2)
+                )
+            ],
+            'layout': go.Layout(
+                title=f"Stock: {selected_stock} ({time_range})",
+                xaxis_title="Date",
+                xaxis=dict(
+                    tickmode='array',
+                    tickvals=reduced_x,  # Positions of ticks are reduced uniform x-values
+                    ticktext=reduced_dates  # Show reduced set of actual dates at each tick
+                ),
+                yaxis={'title': 'Close Price', 'showgrid': False},
+            )
+        }
+    elif (selected_graph_type == 'ADX - Average Directional Index'):
+        figure = {
+            'data': [
+                go.Scatter(
+                    x=uniform_x,
+                    y=df_filtered['ADX'],
+                    mode='lines',
+                    name=f'{selected_stock} ADX (period: 14)',
                     line=dict(color='orange'),
                     marker=dict(size=2)
                 )
@@ -202,6 +229,14 @@ def update_graph(selected_stock, selected_graph_type, n_clicks_5y, n_clicks_1y, 
             )
         }
 
+
+    # Stock information (showing the last close price and time)
+    last_entry = df_filtered.iloc[-1] if not df_filtered.empty else {}
+    stock_code = last_entry.get('code', 'N/A')
+    last_close_price = last_entry.get('close', 0)
+    last_time = last_entry.get('local_time', 'N/A')
+    info = f"Stock: {stock_code}, Last close price: {last_close_price}, Time: {last_time}"
+
     sma_total = 0
 
     for close in stock_close_prices:
@@ -217,50 +252,12 @@ def update_graph(selected_stock, selected_graph_type, n_clicks_5y, n_clicks_1y, 
     period = len(df_filtered['close']) # Weighted moving average period equal to number of data points
     df_filtered['WMA'] = calculate_wma(df_filtered, period)
 
-    print(df_filtered['WMA'])
-
     wma = df_filtered['WMA'].iloc[-1]
 
     wma_info = f'The Weighted Moving Average for {len(df_filtered['close'])} points is {wma}'
 
-    # Stock information (showing the last close price and time)
-    last_entry = df_filtered.iloc[-1] if not df_filtered.empty else {}
-    stock_code = last_entry.get('code', 'N/A')
-    last_close_price = last_entry.get('close', 0)
-    last_time = last_entry.get('local_time', 'N/A')
-    info = f"Stock: {stock_code}, Last close price: {last_close_price}, Time: {last_time}"
-
     return figure, info, sma_info, wma_info
 
-def calculate_wma(df, period):
-    """
-    Calculate the Weighted Moving Average (WMA) for a given period.
-    
-    Args:
-    - df (pd.DataFrame): DataFrame with stock price data.
-    - period (int): The number of days to calculate the WMA for.
-    
-    Returns:
-    - pd.Series: Weighted Moving Average.
-    """
-    weights = pd.Series(range(1, period + 1))  # Create a range of weights (1 to period)
-
-    if (len(df['close']) == 0):
-        weights.iloc[-1] = -1
-        wma = weights
-    else:
-        # Use rolling to apply the WMA over the specified period
-        wma = df['close'].rolling(window=period).apply(lambda prices: (prices * weights).sum() / weights.sum(), raw=True)
-    
-    return wma
-
-def calculate_macd(df, short_period=12, long_period=26, signal_period=9):
-    df['EMA_12'] = df['close'].ewm(span=short_period, adjust=False).mean()
-    df['EMA_26'] = df['close'].ewm(span=long_period, adjust=False).mean()
-    df['MACD'] = df['EMA_12'] - df['EMA_26']
-    df['Signal_Line'] = df['MACD'].ewm(span=signal_period, adjust=False).mean()
-    df['MACD_Histogram'] = df['MACD'] - df['Signal_Line']
-    return df
 
 if __name__ == '__main__':
     app.run_server(debug=True, port=8050)
