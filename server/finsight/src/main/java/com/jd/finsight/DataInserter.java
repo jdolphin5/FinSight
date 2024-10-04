@@ -36,6 +36,14 @@ public class DataInserter {
         // String csvFile = "C:\\Users\\james\\Documents\\github
         // repo\\FinSight\\server\\finsight\\raw-data\\AMZN.USUSD_Candlestick_1_M_BID_09.09.2024-28.09.2024.csv";
 
+        // String csvFile = "C:\\Users\\james\\Documents\\github
+        // repo\\FinSight\\server\\finsight\\raw-data\\GOOGL.USUSD_Candlestick_1_M_BID_09.09.2024-28.09.2024.csv";
+
+        // String csvFile = "C:\\Users\\james\\Documents\\github
+        // repo\\FinSight\\server\\finsight\\raw-data\\MSFT.USUSD_Candlestick_1_M_BID_09.09.2024-28.09.2024.csv";
+
+        String csvFile = "C:\\Users\\james\\Documents\\github repo\\FinSight\\server\\finsight\\raw-data\\TSLA.USUSD_Candlestick_1_M_BID_09.09.2024-28.09.2024.csv";
+
         int i = 0;
 
         try (BufferedReader br = new BufferedReader(new FileReader(csvFile))) {
