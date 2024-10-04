@@ -105,3 +105,26 @@ def calculate_parabolic_sar(df, initial_af=0.02, max_af=0.20, step_af=0.02):
     
     df['SAR'] = sar_values
     return df
+
+def calculate_rsi(df, periods=14):
+    # Calculate the price changes (delta)
+    delta = df['close'].diff()
+
+    # Separate gains and losses
+    gain = (delta.where(delta > 0, 0))
+    loss = (-delta.where(delta < 0, 0))
+
+    # Calculate the average gain and average loss using rolling mean
+    avg_gain = gain.rolling(window=periods, min_periods=1).mean()
+    avg_loss = loss.rolling(window=periods, min_periods=1).mean()
+
+    # Avoid division by zero (if avg_loss is 0)
+    rs = avg_gain / avg_loss.replace(0, 1e-10)  # Replace 0 to avoid division by zero
+
+    # Calculate the RSI
+    rsi = 100 - (100 / (1 + rs))
+
+    # Add RSI to the dataframe
+    df['RSI'] = rsi
+    
+    return df
