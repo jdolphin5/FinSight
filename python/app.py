@@ -3,7 +3,8 @@ from dash import Dash, html, dcc, Input, Output
 import plotly.graph_objects as go
 import requests
 import pandas as pd  # Import pandas for data manipulation
-from math_calcs import calculate_wma, calculate_macd, calculate_true_range, calculate_dm, calculate_di, calculate_adx
+from math_calcs import calculate_wma, calculate_macd, calculate_true_range, calculate_dm, calculate_di
+from math_calcs import calculate_adx, calculate_parabolic_sar
 
 # Initialize Flask server
 server = Flask(__name__)
@@ -13,7 +14,7 @@ app = Dash(__name__, server=server)
 
 # Example stock codes for dropdown
 available_stocks = ['AAPL', 'AMZN', 'GOOGL', 'TSLA', 'MSFT']
-available_graph_types = ['Standard', 'MACD - Moving Averga Convergence/Divergence', 'ADX - Average Directional Index']
+available_graph_types = ['Standard', 'MACD - Moving Averga Convergence/Divergence', 'ADX - Average Directional Index', 'Parabolic SAR - Stop and Reverse']
 
 # Define the Dash layout
 app.layout = html.Div([
@@ -45,13 +46,14 @@ app.layout = html.Div([
     ], style={'display': 'flex', 'gap': '10px', 'margin': '10px 0'}),
 
     dcc.Graph(id='stock-graph'),
+    html.Div(id='asterix-info'),
     html.Div(id='stock-info'),
     html.Div(id='simple-moving-average'),
     html.Div(id='weighted-moving-average')
 ])
 
 @app.callback(
-    [Output('stock-graph', 'figure'), Output('stock-info', 'children'), Output('simple-moving-average', 'children'), Output('weighted-moving-average', 'children')],
+    [Output('stock-graph', 'figure'), Output('asterix-info', 'children'), Output('stock-info', 'children'), Output('simple-moving-average', 'children'), Output('weighted-moving-average', 'children')],
     [Input('stock-dropdown', 'value'),
      Input('graph-type-dropdown', 'value'),
      Input('5-years-button', 'n_clicks'),
@@ -134,11 +136,6 @@ def update_graph(selected_stock, selected_graph_type, n_clicks_5y, n_clicks_1y, 
     df_filtered['EMA'] = df_filtered['close'].ewm(span=10, adjust=False).mean()
     stock_ema = df_filtered['EMA']
 
-    df_filtered = calculate_true_range(df_filtered)
-    df_filtered = calculate_dm(df_filtered)
-    df_filtered = calculate_di(df_filtered, period=14)
-    df_filtered = calculate_adx(df_filtered, period=14)
-
     # Create the figure for the graph
     if (selected_graph_type == 'Standard'):
         figure = {
@@ -169,7 +166,7 @@ def update_graph(selected_stock, selected_graph_type, n_clicks_5y, n_clicks_1y, 
                     tickvals=reduced_x,  # Positions of ticks are reduced uniform x-values
                     ticktext=reduced_dates  # Show reduced set of actual dates at each tick
                 ),
-                yaxis={'title': 'Close Price', 'showgrid': False},
+                yaxis={'title': 'Price', 'showgrid': False},
             )
         }
     elif (selected_graph_type == 'MACD - Moving Averga Convergence/Divergence'):
@@ -202,10 +199,15 @@ def update_graph(selected_stock, selected_graph_type, n_clicks_5y, n_clicks_1y, 
                     tickvals=reduced_x,  # Positions of ticks are reduced uniform x-values
                     ticktext=reduced_dates  # Show reduced set of actual dates at each tick
                 ),
-                yaxis={'title': 'Close Price', 'showgrid': False},
+                yaxis={'title': 'Price', 'showgrid': False},
             )
         }
     elif (selected_graph_type == 'ADX - Average Directional Index'):
+        df_filtered = calculate_true_range(df_filtered)
+        df_filtered = calculate_dm(df_filtered)
+        df_filtered = calculate_di(df_filtered, period=14)
+        df_filtered = calculate_adx(df_filtered, period=14)
+
         figure = {
             'data': [
                 go.Scatter(
@@ -225,7 +227,48 @@ def update_graph(selected_stock, selected_graph_type, n_clicks_5y, n_clicks_1y, 
                     tickvals=reduced_x,  # Positions of ticks are reduced uniform x-values
                     ticktext=reduced_dates  # Show reduced set of actual dates at each tick
                 ),
-                yaxis={'title': 'Close Price', 'showgrid': False},
+                yaxis={'title': 'Price', 'showgrid': False},
+            )
+        }
+    elif (selected_graph_type == 'Parabolic SAR - Stop and Reverse'):
+        df_filtered = calculate_parabolic_sar(df_filtered)
+
+        figure = {
+            'data': [
+                go.Scatter(
+                    x=uniform_x,
+                    y=df_filtered['SAR'],
+                    mode='lines',
+                    name=f'{selected_stock} SAR',
+                    line=dict(color='orange'),
+                    marker=dict(size=4)
+                ),
+                                go.Scatter(
+                    x=uniform_x,
+                    y=df_filtered['high'],
+                    mode='lines',
+                    name=f'{selected_stock} High',
+                    line=dict(color='red'),
+                    marker=dict(size=2)
+                ),
+                go.Scatter(
+                    x=uniform_x,
+                    y=df_filtered['low'],
+                    mode='lines',
+                    name=f'{selected_stock} Low',
+                    line=dict(color='blue'),
+                    marker=dict(size=2)
+                )
+            ],
+            'layout': go.Layout(
+                title=f"Stock: {selected_stock} ({time_range})",
+                xaxis_title="Date",
+                xaxis=dict(
+                    tickmode='array',
+                    tickvals=reduced_x,  # Positions of ticks are reduced uniform x-values
+                    ticktext=reduced_dates  # Show reduced set of actual dates at each tick
+                ),
+                yaxis={'title': 'Price', 'showgrid': False},
             )
         }
 
@@ -256,7 +299,13 @@ def update_graph(selected_stock, selected_graph_type, n_clicks_5y, n_clicks_1y, 
 
     wma_info = f'The Weighted Moving Average for {len(df_filtered['close'])} points is {wma}'
 
-    return figure, info, sma_info, wma_info
+    asterix_info = ''
+
+    if (selected_graph_type == 'Parabolic SAR - Stop and Reverse'):
+        asterix_info = '*AF = Acceleration Factor, initial_af=0.02, max_af=0.20, step_af=0.02'
+
+
+    return figure, asterix_info, info, sma_info, wma_info
 
 
 if __name__ == '__main__':

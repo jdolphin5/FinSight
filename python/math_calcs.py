@@ -48,3 +48,60 @@ def calculate_adx(df, period):
     df['DX'] = 100 * (abs(df['DI+'] - df['DI-']) / (df['DI+'] + df['DI-']))
     df['ADX'] = df['DX'].ewm(span=period, min_periods=period).mean()
     return df
+
+def calculate_parabolic_sar(df, initial_af=0.02, max_af=0.20, step_af=0.02):
+    # Initialize SAR values
+    sar = df['low'][0]  # Starting SAR for uptrend
+    trend_up = True  # Start with an uptrend assumption
+    ep = df['high'][0]  # Extreme Point (EP) starts as the highest price in uptrend
+    af = initial_af  # Acceleration Factor (AF) starts at 0.02
+    
+    # Initialize lists to store SAR values and trend direction
+    sar_values = [sar]
+    
+    for i in range(1, len(df)):
+        prev_sar = sar
+        prev_ep = ep
+        
+        if trend_up:
+            # Uptrend: calculate SAR
+            sar = prev_sar + af * (ep - prev_sar)
+            
+            # Adjust SAR to not be higher than the last two lows
+            sar = min(sar, df['low'][i], df['low'][i - 1])
+            
+            # If new high is reached, update EP and increase AF
+            if df['high'][i] > ep:
+                ep = df['high'][i]
+                af = min(af + step_af, max_af)
+            
+            # If SAR crosses below price (reversal), switch to downtrend
+            if df['low'][i] < sar:
+                trend_up = False
+                sar = ep  # Reset SAR to EP
+                ep = df['low'][i]  # Reset EP to lowest price of new trend
+                af = initial_af  # Reset AF
+        else:
+            # Downtrend: calculate SAR
+            sar = prev_sar - af * (prev_sar - ep)
+            
+            # Adjust SAR to not be lower than the last two highs
+            sar = max(sar, df['high'][i], df['high'][i - 1])
+            
+            # If new low is reached, update EP and increase AF
+            if df['low'][i] < ep:
+                ep = df['low'][i]
+                af = min(af + step_af, max_af)
+            
+            # If SAR crosses above price (reversal), switch to uptrend
+            if df['high'][i] > sar:
+                trend_up = True
+                sar = ep  # Reset SAR to EP
+                ep = df['high'][i]  # Reset EP to highest price of new trend
+                af = initial_af  # Reset AF
+        
+        # Store SAR value for this iteration
+        sar_values.append(sar)
+    
+    df['SAR'] = sar_values
+    return df
