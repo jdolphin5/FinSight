@@ -47,6 +47,9 @@ app.layout = html.Div([
         placeholder='Select Graph Type'
     ),
 
+    html.Br(),
+    dcc.Graph(id='stock-graph'),
+
     # Buttons for time range selection
     html.Div([
         html.Button('5 Years', id='5-years-button', n_clicks=0, style={'background-color': colours['button-bg1'], 'color': colours['button-text1']}),
@@ -56,13 +59,12 @@ app.layout = html.Div([
         html.Button('5 Days', id='5-days-button', n_clicks=0, style={'background-color': colours['button-bg1'], 'color': colours['button-text1']}),
         html.Button('1 Day', id='1-day-button', n_clicks=0, style={'background-color': colours['button-bg1'], 'color': colours['button-text1']}),
     ], style={'display': 'flex', 'gap': '10px', 'margin': '10px 0'}),
-
-    dcc.Graph(id='stock-graph'),
     html.Br(),
     html.Div(id='asterix-info'),
     html.Div(id='stock-info'),
     html.Div(id='simple-moving-average'),
-    html.Div(id='weighted-moving-average')
+    html.Div(id='weighted-moving-average'),
+
 ], style={'color': colours['text'], 'background-color': colours['background'], 'font-family': 'Arial', 'padding': '0px 10px 0px 10px'})
 
 @app.callback(
