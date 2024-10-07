@@ -128,3 +128,107 @@ def calculate_rsi(df, periods=14):
     df['RSI'] = rsi
     
     return df
+
+def calculate_stochastic_oscillator(df, period=14):
+    """
+    Calculate the Stochastic Oscillator (%K) for a given DataFrame.
+
+    :param df: DataFrame containing 'close', 'high', and 'low' columns.
+    :param period: The look-back period for calculating %K (default is 14).
+    :return: DataFrame with an added 'stochastic_k' column.
+    """
+    df = df.copy()  # Make a copy of the DataFrame
+
+    # Calculate the rolling lowest low and highest high for the look-back period
+    df['lowest_low'] = df['low'].rolling(window=period).min()
+    df['highest_high'] = df['high'].rolling(window=period).max()
+
+    # Calculate the %K value (Stochastic Oscillator)
+    df['stochastic_k'] = 100 * (df['close'] - df['lowest_low']) / (df['highest_high'] - df['lowest_low'])
+
+    # Drop NaN values (which arise from the initial period where rolling window is not full)
+    df.dropna(subset=['stochastic_k'], inplace=True)
+
+    return df
+
+def calculate_cci(df, period=20):
+    """
+    Calculate the Commodity Channel Index (CCI) for a given DataFrame.
+
+    :param df: DataFrame containing 'close', 'high', and 'low' columns.
+    :param period: The look-back period for calculating CCI (default is 20).
+    :return: DataFrame with an added 'CCI' column.
+    """
+    df = df.copy()  # Make a copy of the DataFrame
+    
+    # Calculate the Typical Price (TP)
+    df['typical_price'] = (df['high'] + df['low'] + df['close']) / 3
+    
+    # Calculate the SMA of Typical Price
+    df['sma_typical_price'] = df['typical_price'].rolling(window=period).mean()
+    
+    def mean_deviation(typical_price_series):
+        sma_tp = typical_price_series.mean()  # SMA of the typical price over the window
+        return ((typical_price_series - sma_tp).abs()).mean()  # Mean of absolute deviations
+    
+    df['mean_deviation'] = df['typical_price'].rolling(window=period).apply(mean_deviation)
+    
+    # Calculate the CCI
+    df['CCI'] = (df['typical_price'] - df['sma_typical_price']) / (0.015 * df['mean_deviation'])
+    
+    # Drop NaN values (which arise from the initial period where rolling window is not full)
+    df.dropna(subset=['CCI'], inplace=True)
+    
+    return df
+
+def calculate_bollinger_bands(df, period=20):
+    """
+    Calculate Bollinger Bands for a given DataFrame.
+
+    :param df: DataFrame containing 'close' prices.
+    :param period: The look-back period for calculating the middle band (SMA) and standard deviation (default is 20).
+    :return: DataFrame with added 'Middle Band', 'Upper Band', and 'Lower Band' columns.
+    """
+    df = df.copy()  # Make a copy of the DataFrame
+    
+    # Calculate the Middle Band (SMA)
+    df['Middle Band'] = df['close'].rolling(window=period).mean()
+    
+    # Calculate the rolling standard deviation of the closing prices
+    df['StdDev'] = df['close'].rolling(window=period).std()
+    
+    # Calculate the Upper and Lower Bands
+    df['Upper Band'] = df['Middle Band'] + (2 * df['StdDev'])
+    df['Lower Band'] = df['Middle Band'] - (2 * df['StdDev'])
+    
+    # Drop NaN values that arise from the initial period where the rolling window is incomplete
+    df.dropna(subset=['Middle Band', 'Upper Band', 'Lower Band'], inplace=True)
+    
+    return df
+
+def calculate_atr(df, period=14):
+    """
+    Calculate the Average True Range (ATR) for a given DataFrame.
+
+    :param df: DataFrame containing 'high', 'low', and 'close' columns.
+    :param period: The look-back period for calculating the ATR (default is 14).
+    :return: DataFrame with added 'TR' and 'ATR' columns.
+    """
+    df = df.copy()  # Make a copy of the DataFrame
+
+    # Calculate the True Range (TR)
+    df['prev_close'] = df['close'].shift(1)
+    df['high_low'] = df['high'] - df['low']
+    df['high_prev_close'] = (df['high'] - df['prev_close']).abs()
+    df['low_prev_close'] = (df['low'] - df['prev_close']).abs()
+
+    # True Range is the maximum of (high-low), |high-previous close|, |low-previous close|
+    df['TR'] = df[['high_low', 'high_prev_close', 'low_prev_close']].max(axis=1)
+
+    # Calculate the ATR using the Exponential Moving Average (EMA) of True Range
+    df['ATR'] = df['TR'].ewm(span=period, adjust=False).mean()
+
+    # Drop the helper columns to clean up the DataFrame
+    df.drop(['prev_close', 'high_low', 'high_prev_close', 'low_prev_close'], axis=1, inplace=True)
+
+    return df
