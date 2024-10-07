@@ -63,7 +63,7 @@ app.layout = html.Div([
     html.Div(id='stock-info'),
     html.Div(id='simple-moving-average'),
     html.Div(id='weighted-moving-average')
-], style={'color': colours['text'], 'background-color': colours['background'], 'font-family': 'Arial'})
+], style={'color': colours['text'], 'background-color': colours['background'], 'font-family': 'Arial', 'padding': '0px 10px 0px 10px'})
 
 @app.callback(
     [Output('stock-graph', 'figure'), Output('asterix-info', 'children'), Output('stock-info', 'children'), Output('simple-moving-average', 'children'), Output('weighted-moving-average', 'children')],
