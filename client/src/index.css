@@ -1,10 +1,13 @@
 body {
   font-family: Arial, sans-serif;
+  color: #111827;
+  background-color: #fafafa;
 }
 
 h1,
 h2 {
-  color: #333;
+  font-family: Impact, Haettenschweiler, "Arial Narrow Bold", sans-serif;
+  color: #01177c;
 }
 
 button {
@@ -19,3 +22,22 @@ button {
 button:hover {
   background-color: #21a1f1;
 }
+
+/*
+BG:
+#FAFAFA
+Text:
+#111827
+Blue logo text
+#01177C
+Button bg:
+#3C83F6
+Button text:
+#FFFFFF
+Hyperlink:
+#3C92F7
+Button2 bg:
+#F0F6FF
+Button2 text:
+#7083F7
+*/

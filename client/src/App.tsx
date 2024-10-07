@@ -7,7 +7,7 @@ const App: React.FC = () => {
         <h1>React App</h1>
       </div>
       <div>
-        <iframe src="http://localhost:8050" width="800" height="800" />
+        <iframe src="http://localhost:8050" width="900" height="800" />
       </div>
     </div>
   );

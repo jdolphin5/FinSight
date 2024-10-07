@@ -13,6 +13,15 @@ server = Flask(__name__)
 # Initialize Dash app with Flask server
 app = Dash(__name__, server=server)
 
+colours = {
+    'background': '#FAFAFA',
+    'text': '#111827',
+    'button-bg1': '#3C83F6',
+    'button-text1': '#FFFFFF',
+    'button-bg2': '#F0F6FF',
+    'button-text2': '#7083F7'
+}
+
 # Example stock codes for dropdown
 available_stocks = ['AAPL', 'AMZN', 'GOOGL', 'TSLA', 'MSFT']
 available_graph_types = ['Standard', 'MACD - Moving Average Convergence/Divergence', 'ADX - Average Directional Index', 'Parabolic SAR - Stop and Reverse',
@@ -40,20 +49,21 @@ app.layout = html.Div([
 
     # Buttons for time range selection
     html.Div([
-        html.Button('5 Years', id='5-years-button', n_clicks=0),
-        html.Button('1 Year', id='1-year-button', n_clicks=0),
-        html.Button('6 Months', id='6-months-button', n_clicks=0),
-        html.Button('1 Month', id='1-month-button', n_clicks=0),
-        html.Button('5 Days', id='5-days-button', n_clicks=0),
-        html.Button('1 Day', id='1-day-button', n_clicks=0),
+        html.Button('5 Years', id='5-years-button', n_clicks=0, style={'background-color': colours['button-bg1'], 'color': colours['button-text1']}),
+        html.Button('1 Year', id='1-year-button', n_clicks=0, style={'background-color': colours['button-bg1'], 'color': colours['button-text1']}),
+        html.Button('6 Months', id='6-months-button', n_clicks=0, style={'background-color': colours['button-bg1'], 'color': colours['button-text1']}),
+        html.Button('1 Month', id='1-month-button', n_clicks=0, style={'background-color': colours['button-bg1'], 'color': colours['button-text1']}),
+        html.Button('5 Days', id='5-days-button', n_clicks=0, style={'background-color': colours['button-bg1'], 'color': colours['button-text1']}),
+        html.Button('1 Day', id='1-day-button', n_clicks=0, style={'background-color': colours['button-bg1'], 'color': colours['button-text1']}),
     ], style={'display': 'flex', 'gap': '10px', 'margin': '10px 0'}),
 
     dcc.Graph(id='stock-graph'),
+    html.Br(),
     html.Div(id='asterix-info'),
     html.Div(id='stock-info'),
     html.Div(id='simple-moving-average'),
     html.Div(id='weighted-moving-average')
-])
+], style={'color': colours['text'], 'background-color': colours['background'], 'font-family': 'Arial'})
 
 @app.callback(
     [Output('stock-graph', 'figure'), Output('asterix-info', 'children'), Output('stock-info', 'children'), Output('simple-moving-average', 'children'), Output('weighted-moving-average', 'children')],
@@ -69,7 +79,7 @@ app.layout = html.Div([
 )
 def update_graph(selected_stock, selected_graph_type, n_clicks_5y, n_clicks_1y, n_clicks_6m, n_clicks_1m, n_clicks_5d, n_clicks_1d, relayoutData):
     # Determine the selected time range based on the button clicks
-    time_range = None
+    time_range = 'Default'
     if n_clicks_5y:
         time_range = '5y'
     elif n_clicks_1y:
