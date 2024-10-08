@@ -72,6 +72,7 @@ public class DataInserter {
         LocalDateTime localDateTime = null;
 
         try {
+            // set DateTime in DB to UTC+0 TZ (i.e. convert from entered timezone to UTC)
             localDateTime = LocalDateTime.parse(localTimeStr,
                     DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss.SSS 'GMT'XX"));
         } catch (DateTimeParseException e) {
