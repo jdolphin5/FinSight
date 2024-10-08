@@ -114,7 +114,8 @@ def update_graph(selected_stock, selected_graph_type, n_clicks_5y, n_clicks_1y, 
     df = pd.DataFrame(stock_data)
 
     # Ensure the 'local_time' column is in datetime format
-    df['local_time'] = pd.to_datetime(df['local_time'])
+    # Convert from UTC+0 in DB to UTC+8 (US/East Timezone) 
+    df['local_time'] = pd.to_datetime(df['local_time']).dt.tz_convert('US/Eastern')
     
     df_filtered = df
     df_filtered = df_filtered.copy()
