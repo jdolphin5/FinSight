@@ -8,8 +8,8 @@
 ### Python Dash App/Server
 /python/venv/
 /python/__pycache__/
-python/calculations/__pycache__/math_calcs.cpython-312.pyc
-python/visualisation/__pycache__/figures.cpython-312.pyc
+python/calculations/__pycache__/
+python/visualisation/__pycache__/
 
 ### Backend/Server
 HELP.md
