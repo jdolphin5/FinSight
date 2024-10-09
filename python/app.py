@@ -2,8 +2,10 @@ from flask import Flask, jsonify
 from dash import Dash, html, dcc, Input, Output
 import requests
 import pandas as pd  # Import pandas for data manipulation
+from datetime import datetime
 from calculations.math_calcs import calculate_wma
 from visualisation.figures import generate_figures
+from util.date_time import compute_time_frame
 
 # Initialize Flask server
 server = Flask(__name__)
@@ -50,12 +52,12 @@ app.layout = html.Div([
 
     # Buttons for time range selection
     html.Div([
-        html.Button('5 Years', id='5-years-button', n_clicks=0, style={'background-color': colours['button-bg1'], 'color': colours['button-text1']}),
-        html.Button('1 Year', id='1-year-button', n_clicks=0, style={'background-color': colours['button-bg1'], 'color': colours['button-text1']}),
-        html.Button('6 Months', id='6-months-button', n_clicks=0, style={'background-color': colours['button-bg1'], 'color': colours['button-text1']}),
-        html.Button('1 Month', id='1-month-button', n_clicks=0, style={'background-color': colours['button-bg1'], 'color': colours['button-text1']}),
-        html.Button('5 Days', id='5-days-button', n_clicks=0, style={'background-color': colours['button-bg1'], 'color': colours['button-text1']}),
-        html.Button('1 Day', id='1-day-button', n_clicks=0, style={'background-color': colours['button-bg1'], 'color': colours['button-text1']}),
+        html.Button('5 Years', id='5-years-button', n_clicks_timestamp=None, style={'background-color': colours['button-bg1'], 'color': colours['button-text1']}),
+        html.Button('1 Year', id='1-year-button', n_clicks_timestamp=None, style={'background-color': colours['button-bg1'], 'color': colours['button-text1']}),
+        html.Button('6 Months', id='6-months-button', n_clicks_timestamp=None, style={'background-color': colours['button-bg1'], 'color': colours['button-text1']}),
+        html.Button('1 Month', id='1-month-button', n_clicks_timestamp=None, style={'background-color': colours['button-bg1'], 'color': colours['button-text1']}),
+        html.Button('5 Days', id='5-days-button', n_clicks_timestamp=None, style={'background-color': colours['button-bg1'], 'color': colours['button-text1']}),
+        html.Button('1 Day', id='1-day-button', n_clicks_timestamp=None, style={'background-color': colours['button-bg1'], 'color': colours['button-text1']}),
     ], style={'display': 'flex', 'gap': '10px', 'margin': '10px 0'}),
     html.Br(),
     html.Div(id='asterix-info'),
@@ -69,32 +71,55 @@ app.layout = html.Div([
     [Output('stock-graph', 'figure'), Output('asterix-info', 'children'), Output('stock-info', 'children'), Output('simple-moving-average', 'children'), Output('weighted-moving-average', 'children')],
     [Input('stock-dropdown', 'value'),
      Input('graph-type-dropdown', 'value'),
-     Input('5-years-button', 'n_clicks'),
-     Input('1-year-button', 'n_clicks'),
-     Input('6-months-button', 'n_clicks'),
-     Input('1-month-button', 'n_clicks'),
-     Input('5-days-button', 'n_clicks'),
-     Input('1-day-button', 'n_clicks'),
+     Input('5-years-button', 'n_clicks_timestamp'),
+     Input('1-year-button', 'n_clicks_timestamp'),
+     Input('6-months-button', 'n_clicks_timestamp'),
+     Input('1-month-button', 'n_clicks_timestamp'),
+     Input('5-days-button', 'n_clicks_timestamp'),
+     Input('1-day-button', 'n_clicks_timestamp'),
      Input('stock-graph', 'relayoutData')]
 )
-def update_graph(selected_stock, selected_graph_type, n_clicks_5y, n_clicks_1y, n_clicks_6m, n_clicks_1m, n_clicks_5d, n_clicks_1d, relayoutData):
+def update_graph(selected_stock, selected_graph_type, ts_5y, ts_1y, ts_6m, ts_1m, ts_5d, ts_1d, relayoutData):
     # Determine the selected time range based on the button clicks
+
+    # Initialize the time range to 'Default'
     time_range = 'Default'
-    if n_clicks_5y:
-        time_range = '5y'
-    elif n_clicks_1y:
-        time_range = '1y'
-    elif n_clicks_6m:
-        time_range = '6m'
-    elif n_clicks_1m:
-        time_range = '1m'
-    elif n_clicks_5d:
-        time_range = '5d'
-    elif n_clicks_1d:
-        time_range = '1d'
+
+    # Create a dictionary to track timestamps
+    timestamps = {
+        '5y': ts_5y,
+        '1y': ts_1y,
+        '6m': ts_6m,
+        '1m': ts_1m,
+        '5d': ts_5d,
+        '1d': ts_1d
+    }
+
+    # Filter out None or zero values (indicating no clicks)
+    valid_timestamps = {k: v for k, v in timestamps.items() if v is not None and v > 0}
+
+    # Find the button with the most recent timestamp (i.e., the highest value)
+    if valid_timestamps:
+        most_recent = max(valid_timestamps, key=valid_timestamps.get)
+
+        # Based on which button was clicked most recently, set the time range
+        if most_recent == '5y':
+            time_range = '5y'
+        elif most_recent == '1y':
+            time_range = '1y'
+        elif most_recent == '6m':
+            time_range = '6m'
+        elif most_recent == '1m':
+            time_range = '1m'
+        elif most_recent == '5d':
+            time_range = '5d'
+        elif most_recent == '1d':
+            time_range = '1d'
+
+    time_range_from, time_range_to = compute_time_frame(time_range, datetime.now())
 
     # Build the URL for the GET request to the backend
-    backend_url = f"http://127.0.0.1:8080/stocks/datefrom/01.01.2020 01:01:01.000/dateto/28.09.2024 01:01:01.000/code/{selected_stock}"
+    backend_url = f"http://127.0.0.1:8080/stocks/datefrom/{time_range_from}/dateto/{time_range_to}/code/{selected_stock}"
 
     # Make a GET request to fetch stock data from the backend
     try:
