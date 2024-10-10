@@ -1,5 +1,5 @@
 /docs
-/logs
+/server/finsight/logs
 
 ### Frontend
 /client/node_modules
