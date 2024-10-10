@@ -1,15 +1,16 @@
 package com.jd.finsight.command;
 
+import com.jd.finsight.logging.LogGenerator;
+
 public class LogCommand extends Command {
     private String log;
-    private String logType;
-    private TextFile textFile;
-    // LogGenerator logGenerator;
+    private CommandHandler commandHandler;
+    LogGenerator logGenerator;
 
-    public LogCommand(String log, String logType, TextFile textFile) {
+    public LogCommand(String log, CommandHandler commandHandler, LogGenerator logGenerator) {
         this.log = log;
-        this.logType = logType;
-        this.textFile = textFile;
+        this.commandHandler = commandHandler;
+        this.logGenerator = logGenerator;
     }
 
     @Override
@@ -19,7 +20,7 @@ public class LogCommand extends Command {
         // write to new line in file
         // save file
 
-        textFile.open();
+        commandHandler.log(log, logGenerator);
     }
 
 }

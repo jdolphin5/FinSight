@@ -17,12 +17,14 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.jd.finsight.domain.dto.HistoricalStockDataDto;
+import com.jd.finsight.logging.LogGenerator;
+import com.jd.finsight.logging.impl.CommandLogGenerator;
 import com.jd.finsight.mappers.Mapper;
 import com.jd.finsight.services.HistoricalStockDataService;
 import com.jd.finsight.util.StockUtil;
 import com.jd.finsight.command.LogCommand;
-import com.jd.finsight.command.TextFile;
-import com.jd.finsight.command.TextFileOperationExecutor;
+import com.jd.finsight.command.CommandHandler;
+import com.jd.finsight.command.CommandOperationExecutor;
 import com.jd.finsight.domain.HistoricalStockDataEntity;
 
 import lombok.extern.java.Log;
@@ -32,22 +34,26 @@ import lombok.extern.java.Log;
 public class StockController {
 
     private HistoricalStockDataService historicalStockDataService;
-    private TextFileOperationExecutor textFileOperationExecutor;
-
     private Mapper<HistoricalStockDataEntity, HistoricalStockDataDto> historicalStockDataMapper;
+    private CommandOperationExecutor commandOperationExecutor;
+    private CommandHandler commandHandler;
+    private LogGenerator logGenerator;
 
     public StockController(HistoricalStockDataService historicalStockDataService,
             Mapper<HistoricalStockDataEntity, HistoricalStockDataDto> historicalStockDataMapper,
-            TextFileOperationExecutor textFileOperationExecutor) {
+            CommandOperationExecutor commandOperationExecutor, CommandHandler commandHandler,
+            LogGenerator logGenerator) {
         this.historicalStockDataService = historicalStockDataService;
         this.historicalStockDataMapper = historicalStockDataMapper;
-        this.textFileOperationExecutor = textFileOperationExecutor;
+        this.commandOperationExecutor = commandOperationExecutor;
+        this.commandHandler = commandHandler;
+        this.logGenerator = logGenerator;
     }
 
     @GetMapping(path = "/stocks")
     public List<HistoricalStockDataDto> listStocks() {
-        textFileOperationExecutor
-                .executeOperation(new LogCommand("log line", "genericLog", new TextFile("testFile.txt")));
+        commandOperationExecutor
+                .executeOperation(new LogCommand("log line", commandHandler, logGenerator));
         List<HistoricalStockDataEntity> stockEntries = historicalStockDataService.findAll();
         return stockEntries.stream().map(historicalStockDataMapper::mapTo).collect(Collectors.toList());
     }
