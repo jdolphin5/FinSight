@@ -12,7 +12,7 @@ public class CommandHandler {
 
     public void log(String log, LogGenerator logGenerator) {
         logGenerator.createLogger();
-        logGenerator.abstractLogger.writeLogsToFile(log);
+        logGenerator.getLogger().writeLogsToFile(log);
     }
 
 }
