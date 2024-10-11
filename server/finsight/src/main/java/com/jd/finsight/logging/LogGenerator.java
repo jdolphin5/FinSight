@@ -2,7 +2,7 @@ package com.jd.finsight.logging;
 
 public abstract class LogGenerator {
     protected String filePath;
-    public AbstractLogger abstractLogger;
+    protected AbstractLogger abstractLogger;
 
     public LogGenerator(String filePath) {
         this.filePath = filePath;
@@ -12,5 +12,9 @@ public abstract class LogGenerator {
 
     public void writeLogsToFile(String log) {
         abstractLogger.writeLogsToFile(log);
+    }
+
+    public AbstractLogger getLogger() {
+        return this.abstractLogger;
     }
 }
