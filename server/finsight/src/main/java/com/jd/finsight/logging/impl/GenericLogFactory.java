@@ -15,20 +15,22 @@ public class GenericLogFactory extends LogFactory {
 
     @Override
     public void writeLogsToFile(String log) {
-        Logger logger = Logger.getLogger("MyLog");
+        Logger logger = Logger.getLogger("GenericLogFactoryLogger");
         FileHandler fh;
 
         try {
 
-            // This block configure the logger with handler and formatter
-            fh = new FileHandler(filePath);
+            // This block configures the logger with handler and formatter
+            // true param for file handler enables append mode
+            fh = new FileHandler(filePath, true);
             logger.addHandler(fh);
+
             SimpleFormatter formatter = new SimpleFormatter();
             fh.setFormatter(formatter);
 
-            // the following statement is used to log any messages
-            logger.info("Test log, file path: " + this.filePath);
+            logger.info(log);
 
+            fh.close();
         } catch (SecurityException e) {
             e.printStackTrace();
         } catch (IOException e) {
