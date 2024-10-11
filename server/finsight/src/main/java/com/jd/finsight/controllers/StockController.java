@@ -18,10 +18,13 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.jd.finsight.domain.dto.HistoricalStockDataDto;
 import com.jd.finsight.logging.LogGenerator;
-import com.jd.finsight.logging.impl.CommandLogGenerator;
 import com.jd.finsight.mappers.Mapper;
 import com.jd.finsight.services.HistoricalStockDataService;
 import com.jd.finsight.util.StockUtil;
+import com.jd.finsight.util.ControllerUtil;
+
+import jakarta.servlet.http.HttpServletRequest;
+
 import com.jd.finsight.command.LogCommand;
 import com.jd.finsight.command.CommandHandler;
 import com.jd.finsight.command.CommandOperationExecutor;
@@ -51,15 +54,21 @@ public class StockController {
     }
 
     @GetMapping(path = "/stocks")
-    public List<HistoricalStockDataDto> listStocks() {
+    public List<HistoricalStockDataDto> listStocks(HttpServletRequest request) {
         commandOperationExecutor
-                .executeOperation(new LogCommand("log line", commandHandler, logGenerator));
+                .executeOperation(
+                        new LogCommand(
+                                "GET endpoint hit: \"/stocks\" from IP address: " + ControllerUtil.getClientIp(request),
+                                commandHandler, logGenerator));
         List<HistoricalStockDataEntity> stockEntries = historicalStockDataService.findAll();
         return stockEntries.stream().map(historicalStockDataMapper::mapTo).collect(Collectors.toList());
     }
 
     @GetMapping(path = "/stocks/{id}")
-    public ResponseEntity<HistoricalStockDataDto> getStock(@PathVariable("id") Long id) {
+    public ResponseEntity<HistoricalStockDataDto> getStock(@PathVariable("id") Long id, HttpServletRequest request) {
+        commandOperationExecutor
+                .executeOperation(new LogCommand("GET endpoint hit: \"/stocks/" + id + "\" from IP address: "
+                        + ControllerUtil.getClientIp(request), commandHandler, logGenerator));
         Optional<HistoricalStockDataEntity> foundStockEntry = historicalStockDataService.findOne(id);
         return foundStockEntry.map(historicalStockDataEntity -> {
             HistoricalStockDataDto historicalStockDataDto = historicalStockDataMapper.mapTo(historicalStockDataEntity);
@@ -68,14 +77,25 @@ public class StockController {
     }
 
     @GetMapping(path = "/stocks/code/{code}")
-    public List<HistoricalStockDataDto> getStock(@PathVariable("code") String code) {
+    public List<HistoricalStockDataDto> getStock(@PathVariable("code") String code, HttpServletRequest request) {
+        commandOperationExecutor
+                .executeOperation(
+                        new LogCommand("GET endpoint hit: \"/stocks/code/" + code + "\" from IP address: "
+                                + ControllerUtil.getClientIp(request), commandHandler, logGenerator));
         List<HistoricalStockDataEntity> foundStockEntries = historicalStockDataService.findAllWithCode(code);
         return foundStockEntries.stream().map(historicalStockDataMapper::mapTo).collect(Collectors.toList());
     }
 
     @GetMapping(path = "/stocks/datefrom/{datefrom}/dateto/{dateto}/code/{code}")
     public List<HistoricalStockDataDto> getStock(@PathVariable("datefrom") String dateFrom,
-            @PathVariable("dateto") String dateTo, @PathVariable("code") String code) {
+            @PathVariable("dateto") String dateTo, @PathVariable("code") String code, HttpServletRequest request) {
+
+        commandOperationExecutor
+                .executeOperation(
+                        new LogCommand(
+                                "GET endpoint hit: \"/stocks/datefrom/" + dateFrom + "/dateto/" + dateTo + "/code/"
+                                        + code + "\" from IP address: " + ControllerUtil.getClientIp(request),
+                                commandHandler, logGenerator));
 
         System.out
                 .println("Received GET request: stock code: " + code + " dateFrom: " + dateFrom + " dateTo: " + dateTo);
@@ -92,7 +112,13 @@ public class StockController {
     }
 
     @PostMapping(path = "/stocks")
-    public ResponseEntity<HistoricalStockDataDto> createStock(@RequestBody final HistoricalStockDataDto stock) {
+    public ResponseEntity<HistoricalStockDataDto> createStock(@RequestBody final HistoricalStockDataDto stock,
+            HttpServletRequest request) {
+        commandOperationExecutor
+                .executeOperation(new LogCommand(
+                        "POST endpoint hit: \"/stocks\" from IP address: " + ControllerUtil.getClientIp(request),
+                        commandHandler, logGenerator));
+
         HistoricalStockDataEntity historicalStockDataEntity = historicalStockDataMapper.mapFrom(stock);
         HistoricalStockDataEntity savedHistoricalStockDataEntity = historicalStockDataService
                 .createStock(historicalStockDataEntity);
@@ -105,7 +131,11 @@ public class StockController {
     }
 
     @DeleteMapping(path = "/stocks/{id}")
-    public ResponseEntity<Map<String, String>> deleteStock(@PathVariable("id") Long id) {
+    public ResponseEntity<Map<String, String>> deleteStock(@PathVariable("id") Long id, HttpServletRequest request) {
+        commandOperationExecutor
+                .executeOperation(new LogCommand("POST endpoint hit: \"/stocks/" + id + "\" from IP address: "
+                        + ControllerUtil.getClientIp(request), commandHandler, logGenerator));
+
         Optional<HistoricalStockDataEntity> foundStockEntry = historicalStockDataService.findOne(id);
 
         // If stock entry is found, delete it and return a JSON response with a success
