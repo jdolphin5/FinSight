@@ -7,10 +7,13 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class CommandOperationExecutor {
-    private final List<Command> textFileOperations = new ArrayList<>();
+    // only safe to use List for ops in single-threaded app (concurrency)
+    private final List<Command> commandList = new ArrayList<>();
 
     public void executeOperation(Command command) {
-        textFileOperations.add(command);
+        commandList.add(command);
         command.execute();
     }
+
+    // can add additional commands for undo, redo, etc.
 }
