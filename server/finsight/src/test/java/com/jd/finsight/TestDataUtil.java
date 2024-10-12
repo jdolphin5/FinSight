@@ -1,9 +1,8 @@
 package com.jd.finsight;
 
-import com.jd.finsight.domain.HistoricalStockDataEntity;
-
 import java.sql.Timestamp;
 
+import com.jd.finsight.domain.HistoricalStockDataEntity;
 import com.jd.finsight.util.StockUtil;
 
 public final class TestDataUtil {

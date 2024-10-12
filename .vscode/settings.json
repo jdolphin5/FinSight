@@ -1,0 +1,20 @@
+{
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.formatOnSave": true,
+    "editor.renderWhitespace": "all",
+    "editor.fontSize": 14,
+    "editor.tabSize": 4,
+    "editor.multiCursorModifier": "alt",
+    "editor.wordWrap": "on",
+    "editor.insertSpaces": true,
+    "[java]": {
+        "editor.defaultFormatter": "redhat.java",
+        "editor.codeActionsOnSave": {
+            "source.organizeImports": "explicit"
+        }
+    },
+    "java.compile.nullAnalysis.mode": "automatic",
+    "java.format.settings.url": "redhat.java",
+    "java.format.insertSpaces": true, // Use spaces for indentation
+    "java.format.tabSize": 4 // Set tab size
+}

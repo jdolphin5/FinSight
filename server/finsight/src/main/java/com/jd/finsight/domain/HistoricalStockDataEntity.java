@@ -1,10 +1,5 @@
 package com.jd.finsight.domain;
 
-import lombok.Data;
-import lombok.Builder;
-import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
-
 import java.sql.Timestamp;
 
 import jakarta.persistence.Entity;
@@ -13,6 +8,10 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 //id, code, local_time, open, high, low, close, volume
 @Data

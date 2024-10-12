@@ -1,11 +1,10 @@
 package com.jd.finsight.logging.impl;
 
-import com.jd.finsight.logging.LogGenerator;
-
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import com.jd.finsight.logging.LogFactory;
+import com.jd.finsight.logging.LogGenerator;
 
 @Component
 public class CommandLogGenerator extends LogGenerator {

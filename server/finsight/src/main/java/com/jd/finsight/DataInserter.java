@@ -1,22 +1,20 @@
 package com.jd.finsight;
 
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
+
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.web.client.RestTemplate;
 
-import com.jd.finsight.domain.dto.HistoricalStockDataDto;
-
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.IOException;
-
-import java.time.format.DateTimeParseException;
-import java.sql.Timestamp;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.jd.finsight.domain.dto.HistoricalStockDataDto;
 
 public class DataInserter {
     public void loadCsvData() {

@@ -6,7 +6,7 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 
 @Service
-public class CommandOperationExecutor {
+public class CommandOperationInvoker {
     // only safe to use List for ops in single-threaded app (concurrency)
     private final List<Command> commandList = new ArrayList<>();
 
