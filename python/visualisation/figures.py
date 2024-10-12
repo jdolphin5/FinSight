@@ -14,6 +14,12 @@ def generate_figures(df_filtered, selected_graph_type, selected_stock, stock_tim
     reduced_dates = stock_times.dt.strftime('%d-%m-%Y')[::step]
     
     if (selected_graph_type == 'Standard / OHLC'):
+        diff = round(stock_close_prices.iloc[-1] - stock_close_prices.iloc[0], 2)
+        diff_percentage = round(100 * diff / stock_close_prices.iloc[0], 2)
+        sign = '+' if diff_percentage >= 0 else '-'
+
+        asterix_info = f'Total price increase over the period is: {sign}${abs(diff)} ({sign}{abs(diff_percentage)}%)'
+        
         figure = {
             'data': [
                 go.Scatter(

@@ -60,8 +60,9 @@ app.layout = html.Div([
         html.Button('1 Day', id='1-day-button', n_clicks_timestamp=None, style={'background-color': colours['button-bg1'], 'color': colours['button-text1']}),
     ], style={'display': 'flex', 'gap': '10px', 'margin': '10px 0'}),
     html.Br(),
-    html.Div(id='asterix-info'),
     html.Div(id='stock-info'),
+    html.Br(),
+    html.Div(id='asterix-info'),
     html.Div(id='simple-moving-average'),
     html.Div(id='weighted-moving-average'),
 
@@ -172,7 +173,7 @@ def update_graph(selected_stock, selected_graph_type, ts_5y, ts_1y, ts_6m, ts_1m
     stock_code = last_entry.get('code', 'N/A')
     last_close_price = last_entry.get('close', 0)
     last_time = last_entry.get('local_time', 'N/A')
-    info = f"Stock: {stock_code}, Last close price: {last_close_price}, Time: {last_time}"
+    info = f"Stock: {stock_code}, Last close price: {last_close_price}, Time: {last_time} (New York Local Time)"
 
     sma_total = 0
 
