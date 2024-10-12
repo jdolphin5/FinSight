@@ -3,7 +3,6 @@ package com.jd.finsight;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.web.client.RestTemplate;
 
 import com.jd.finsight.domain.dto.HistoricalStockDataDto;
