@@ -54,7 +54,7 @@ public class StockController {
         @GetMapping(path = "/stocks")
         public List<HistoricalStockDataDto> listStocks(HttpServletRequest request) {
                 commandOperationInvoker
-                                .executeOperation(
+                                .invokeCommand(
                                                 new LogCommand(
                                                                 "GET endpoint hit: \"/stocks\" from IP address: "
                                                                                 + ControllerUtil.getClientIp(request),
@@ -67,7 +67,7 @@ public class StockController {
         public ResponseEntity<HistoricalStockDataDto> getStock(@PathVariable("id") Long id,
                         HttpServletRequest request) {
                 commandOperationInvoker
-                                .executeOperation(new LogCommand(
+                                .invokeCommand(new LogCommand(
                                                 "GET endpoint hit: \"/stocks/" + id + "\" from IP address: "
                                                                 + ControllerUtil.getClientIp(request),
                                                 commandHandler, logGenerator));
@@ -82,7 +82,7 @@ public class StockController {
         @GetMapping(path = "/stocks/code/{code}")
         public List<HistoricalStockDataDto> getStock(@PathVariable("code") String code, HttpServletRequest request) {
                 commandOperationInvoker
-                                .executeOperation(
+                                .invokeCommand(
                                                 new LogCommand("GET endpoint hit: \"/stocks/code/" + code
                                                                 + "\" from IP address: "
                                                                 + ControllerUtil.getClientIp(request), commandHandler,
@@ -97,7 +97,7 @@ public class StockController {
                         HttpServletRequest request) {
 
                 commandOperationInvoker
-                                .executeOperation(
+                                .invokeCommand(
                                                 new LogCommand(
                                                                 "GET endpoint hit: \"/stocks/datefrom/" + dateFrom
                                                                                 + "/dateto/" + dateTo + "/code/"
@@ -125,7 +125,7 @@ public class StockController {
         public ResponseEntity<HistoricalStockDataDto> createStock(@RequestBody final HistoricalStockDataDto stock,
                         HttpServletRequest request) {
                 commandOperationInvoker
-                                .executeOperation(new LogCommand(
+                                .invokeCommand(new LogCommand(
                                                 "POST endpoint hit: \"/stocks\" from IP address: "
                                                                 + ControllerUtil.getClientIp(request),
                                                 commandHandler, logGenerator));
@@ -145,7 +145,7 @@ public class StockController {
         public ResponseEntity<Map<String, String>> deleteStock(@PathVariable("id") Long id,
                         HttpServletRequest request) {
                 commandOperationInvoker
-                                .executeOperation(new LogCommand(
+                                .invokeCommand(new LogCommand(
                                                 "POST endpoint hit: \"/stocks/" + id + "\" from IP address: "
                                                                 + ControllerUtil.getClientIp(request),
                                                 commandHandler, logGenerator));
