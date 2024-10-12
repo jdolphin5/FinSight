@@ -10,7 +10,7 @@ import com.jd.finsight.logging.LogFactory;
 @Component
 public class CommandLogGenerator extends LogGenerator {
 
-    public CommandLogGenerator(@Value("${log.file:logs/test.txt}") String filePath) {
+    public CommandLogGenerator(@Value("${log.file:logs/CommandLogs.txt}") String filePath) {
         super(filePath);
     }
 
